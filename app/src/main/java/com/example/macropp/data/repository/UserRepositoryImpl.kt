@@ -5,6 +5,7 @@ import com.example.macropp.data.remote.dto.CreateUserRequest
 import com.example.macropp.data.remote.dto.UserResponse
 import com.example.macropp.domain.model.User
 import com.example.macropp.domain.repository.UserRepository
+import java.util.UUID
 
 class UserRepositoryImpl (
     private val api: UserApi
@@ -23,9 +24,9 @@ class UserRepositoryImpl (
         }
     }
 
-    override suspend fun getUser(userId: Long): Result<User> {
+    override suspend fun getUser(id: UUID): Result<User> {
         return try {
-            val responseDto = api.getUser(userId)
+            val responseDto = api.getUser(id)
             val user = responseDto.toDomain()  // Transform here!
             Result.success(user)
         } catch (e: Exception) {
