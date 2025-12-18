@@ -19,7 +19,8 @@ enum class AppScreen {
     Landing,
     Login,
     SignUp,
-    Home
+    Home,
+    SetUserGoals
 }
 
 @AndroidEntryPoint
@@ -52,6 +53,12 @@ class MainActivity : ComponentActivity() {
                     }
                     AppScreen.Home -> {
                         Text("Welcome! You are logged in.")
+                    }
+                    AppScreen.SetUserGoals ->  {
+                        SetUserGoalsScreen(
+                            onNavigateBack = { currentScreen = AppScreen.Home },
+                            onSetGoalsSuccess = { currentScreen = AppScreen.Home }
+                        )
                     }
                 }
             }
