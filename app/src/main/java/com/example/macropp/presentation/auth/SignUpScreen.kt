@@ -10,18 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
-
 @Composable
-fun AuthScreen(
-    // We pass a function to call when login succeeds to switch screens
-    onLoginSuccess: () -> Unit,
+fun SignUpScreen(
+    onSignUpSuccess: () -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    // If we have a user, trigger the navigation
     if (state.user != null) {
-        onLoginSuccess()
+        onSignUpSuccess()
     }
 
     Column(
@@ -31,11 +29,10 @@ fun AuthScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "MacroPP", style = MaterialTheme.typography.headlineLarge)
+        Text(text = "Create Account", style = MaterialTheme.typography.headlineLarge)
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Email Input
         OutlinedTextField(
             value = state.email,
             onValueChange = { viewModel.onEmailChange(it) },
@@ -45,7 +42,6 @@ fun AuthScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Height Input
         OutlinedTextField(
             value = state.height,
             onValueChange = { viewModel.onHeightChange(it) },
@@ -62,11 +58,20 @@ fun AuthScreen(
                 onClick = { viewModel.onSubmit() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Create Account / Enter")
+                Text("Sign Up")
             }
         }
 
-        // Error Message
+        Spacer(modifier = Modifier.height(16.dp))
+
+
+        OutlinedButton(
+            onClick = onNavigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )  {
+            Text("Back to Landing Page")
+        }
+
         if (state.error != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = state.error!!, color = MaterialTheme.colorScheme.error)

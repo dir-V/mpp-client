@@ -9,9 +9,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.macropp.presentation.auth.AuthScreen
+import com.example.macropp.presentation.auth.LandingScreen
+import com.example.macropp.presentation.auth.LoginScreen
+import com.example.macropp.presentation.auth.SignUpScreen
 import com.example.macropp.ui.theme.MacroPPTheme
 import dagger.hilt.android.AndroidEntryPoint
+
+enum class AppScreen {
+    Landing,
+    Login,
+    SignUp,
+    Home
+}
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -20,17 +29,30 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MacroPPTheme {
-                var isLoggedIn by remember { mutableStateOf(false) }
+                var currentScreen by remember { mutableStateOf(AppScreen.Landing) }
 
-                if (isLoggedIn) {
-                    Text("Welcome! You are logged in.")
-                } else {
-                    AuthScreen(
-                        onLoginSuccess =
-                            {
-                                isLoggedIn = true
-                            }
-                    )
+                when (currentScreen) {
+                    AppScreen.Landing -> {
+                        LandingScreen(
+                            onLoginClick = { currentScreen = AppScreen.Login },
+                            onSignUpClick = { currentScreen = AppScreen.SignUp }
+                        )
+                    }
+                    AppScreen.Login -> {
+                        LoginScreen(
+                            onLoginSuccess = { currentScreen = AppScreen.Home },
+                            onNavigateBack = { currentScreen = AppScreen.Landing }
+                        )
+                    }
+                    AppScreen.SignUp -> {
+                        SignUpScreen(
+                            onSignUpSuccess = { currentScreen = AppScreen.Home },
+                            onNavigateBack = { currentScreen = AppScreen.Landing }
+                        )
+                    }
+                    AppScreen.Home -> {
+                        Text("Welcome! You are logged in.")
+                    }
                 }
             }
         }
