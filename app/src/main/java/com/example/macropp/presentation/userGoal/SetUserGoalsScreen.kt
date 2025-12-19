@@ -1,4 +1,4 @@
-package com.example.macropp.presentation.auth
+package com.example.macropp.presentation.userGoal
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons

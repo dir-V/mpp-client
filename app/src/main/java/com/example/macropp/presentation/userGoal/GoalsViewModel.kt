@@ -1,9 +1,10 @@
-package com.example.macropp.presentation.auth
+package com.example.macropp.presentation.userGoal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.macropp.data.remote.dto.CreateUserGoalRequest
 import com.example.macropp.data.remote.dto.CreateUserRequest
+import com.example.macropp.data.remote.dto.GoalType
 import com.example.macropp.domain.repository.UserGoalRepository
 import com.example.macropp.domain.repository.UserRepository
 import com.example.macropp.presentation.userGoal.GoalsUiState
@@ -61,7 +62,7 @@ class GoalsViewModel @Inject constructor(
             // Create the request object
             val request = CreateUserGoalRequest(
                 userId = currentState.userId,
-                goalType = currentState.goalType,
+                goalType = GoalType.valueOf(currentState.goalType.uppercase()),
                 targetCalories = currentState.targetCalories.toIntOrNull() ?: 0,
                 targetProteinGrams = currentState.targetProteinGrams.toBigDecimal(),
                 targetCarbsGrams = currentState.targetCarbsGrams.toBigDecimal(),
@@ -71,8 +72,8 @@ class GoalsViewModel @Inject constructor(
             // Call the Repository (The code you provided!)
             val result = userGoalRepository.createUserGoal(request)
 
-            result.onSuccess { user ->
-                _goalState.update { it.copy(isLoading = false, user = user) }
+            result.onSuccess {
+                _goalState.update { it.copy(isLoading = false) }
             }.onFailure { exception ->
                 _goalState.update { it.copy(isLoading = false, error = exception.message) }
             }
