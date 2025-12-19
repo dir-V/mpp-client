@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import com.example.macropp.presentation.auth.LandingScreen
 import com.example.macropp.presentation.auth.LoginScreen
 import com.example.macropp.presentation.auth.SignUpScreen
+import com.example.macropp.presentation.userGoal.SetUserGoalsScreen
 import com.example.macropp.ui.theme.MacroPPTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,7 +37,8 @@ class MainActivity : ComponentActivity() {
                     AppScreen.Landing -> {
                         LandingScreen(
                             onLoginClick = { currentScreen = AppScreen.Login },
-                            onSignUpClick = { currentScreen = AppScreen.SignUp }
+                            onSignUpClick = { currentScreen = AppScreen.SignUp },
+                            onSetGoalsClick = { currentScreen = AppScreen.SetUserGoals }
                         )
                     }
                     AppScreen.Login -> {
@@ -56,7 +58,7 @@ class MainActivity : ComponentActivity() {
                     }
                     AppScreen.SetUserGoals ->  {
                         SetUserGoalsScreen(
-                            onNavigateBack = { currentScreen = AppScreen.Home },
+                            onNavigateBack = { currentScreen = AppScreen.Landing },
                             onSetGoalsSuccess = { currentScreen = AppScreen.Home }
                         )
                     }

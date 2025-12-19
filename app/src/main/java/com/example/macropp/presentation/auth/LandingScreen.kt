@@ -10,7 +10,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LandingScreen(
     onLoginClick: () -> Unit,
-    onSignUpClick: () -> Unit
+    onSignUpClick: () -> Unit,
+    onSetGoalsClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -40,6 +41,15 @@ fun LandingScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Create Account")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = onSetGoalsClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("--Test-- Set Goals")
         }
     }
 }

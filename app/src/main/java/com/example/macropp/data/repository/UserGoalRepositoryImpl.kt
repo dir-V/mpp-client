@@ -10,8 +10,9 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import javax.inject.Inject
 
-class UserGoalRepositoryImpl (
+class UserGoalRepositoryImpl @Inject constructor (
     private val api: UserGoalApi
     ): UserGoalRepository{
         override suspend fun createUserGoal(createUserGoalRequest: CreateUserGoalRequest): Result<UserGoal> {

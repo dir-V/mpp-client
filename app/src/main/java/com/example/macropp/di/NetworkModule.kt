@@ -1,6 +1,7 @@
 package com.example.macropp.di
 
 import com.example.macropp.data.remote.UserApi
+import com.example.macropp.data.remote.UserGoalApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,5 +29,12 @@ object NetworkModule {
     @Singleton
     fun provideUserApi(retrofit: Retrofit): UserApi {
         return retrofit.create(UserApi::class.java)
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideUserGoalApi(retrofit: Retrofit): UserGoalApi {
+        return retrofit.create(UserGoalApi::class.java)
     }
 }
