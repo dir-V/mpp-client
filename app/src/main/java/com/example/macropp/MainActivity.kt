@@ -4,25 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.macropp.presentation.auth.LandingScreen
 import com.example.macropp.presentation.auth.LoginScreen
 import com.example.macropp.presentation.auth.SignUpScreen
+import com.example.macropp.presentation.food.CreateFoodScreen
+import com.example.macropp.presentation.home.HomeScreen
+import com.example.macropp.presentation.navigation.Routes
 import com.example.macropp.presentation.userGoal.SetUserGoalsScreen
 import com.example.macropp.ui.theme.MacroPPTheme
 import dagger.hilt.android.AndroidEntryPoint
-
-enum class AppScreen {
-    Landing,
-    Login,
-    SignUp,
-    Home,
-    SetUserGoals
-}
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,35 +24,59 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MacroPPTheme {
-                var currentScreen by remember { mutableStateOf(AppScreen.Landing) }
+                val navController = rememberNavController()
 
-                when (currentScreen) {
-                    AppScreen.Landing -> {
+                NavHost(
+                    navController = navController,
+                    startDestination = Routes.Landing.route
+                ) {
+                    composable(Routes.Landing.route) {
                         LandingScreen(
-                            onLoginClick = { currentScreen = AppScreen.Login },
-                            onSignUpClick = { currentScreen = AppScreen.SignUp },
-                            onSetGoalsClick = { currentScreen = AppScreen.SetUserGoals }
+                            onLoginClick = { navController.navigate(Routes.Login.route) },
+                            onSignUpClick = { navController.navigate(Routes.SignUp.route) },
+                            onSetGoalsClick = { navController.navigate(Routes.SetUserGoals.route) }
                         )
                     }
-                    AppScreen.Login -> {
+                    composable(Routes.Login.route) {
                         LoginScreen(
-                            onLoginSuccess = { currentScreen = AppScreen.Home },
-                            onNavigateBack = { currentScreen = AppScreen.Landing }
+                            onLoginSuccess = {
+                                navController.navigate(Routes.Home.route) {
+                                    popUpTo(Routes.Landing.route) { inclusive = true }
+                                }
+                            },
+                            onNavigateBack = { navController.popBackStack() }
                         )
                     }
-                    AppScreen.SignUp -> {
+                    composable(Routes.SignUp.route) {
                         SignUpScreen(
-                            onSignUpSuccess = { currentScreen = AppScreen.Home },
-                            onNavigateBack = { currentScreen = AppScreen.Landing }
+                            onSignUpSuccess = {
+                                navController.navigate(Routes.Home.route) {
+                                    popUpTo(Routes.Landing.route) { inclusive = true }
+                                }
+                            },
+                            onNavigateBack = { navController.popBackStack() }
                         )
                     }
-                    AppScreen.Home -> {
-                        Text("Welcome! You are logged in.")
+                    composable(Routes.Home.route) {
+                        HomeScreen(
+                            onNavigateToCreateFood = {
+                                navController.navigate(Routes.CreateFood.route)
+                            }
+                        )
                     }
-                    AppScreen.SetUserGoals ->  {
+                    composable(Routes.CreateFood.route) {
+                        CreateFoodScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+                    composable(Routes.SetUserGoals.route) {
                         SetUserGoalsScreen(
-                            onNavigateBack = { currentScreen = AppScreen.Landing },
-                            onSetGoalsSuccess = { currentScreen = AppScreen.Home }
+                            onNavigateBack = { navController.popBackStack() },
+                            onSetGoalsSuccess = {
+                                navController.navigate(Routes.Home.route) {
+                                    popUpTo(Routes.Home.route) { inclusive = true }
+                                }
+                            }
                         )
                     }
                 }

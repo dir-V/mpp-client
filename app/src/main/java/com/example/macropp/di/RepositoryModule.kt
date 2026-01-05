@@ -1,9 +1,12 @@
 package com.example.macropp.di
 
+import com.example.macropp.data.remote.FoodApi
 import com.example.macropp.data.remote.UserApi
 import com.example.macropp.data.remote.UserGoalApi
 import com.example.macropp.data.repository.UserGoalRepositoryImpl
+import com.example.macropp.data.repository.FoodRepositoryImpl
 import com.example.macropp.data.repository.UserRepositoryImpl
+import com.example.macropp.domain.repository.FoodRepository
 import com.example.macropp.domain.repository.UserGoalRepository
 import com.example.macropp.domain.repository.UserRepository
 import dagger.Module
@@ -20,6 +23,12 @@ object RepositoryModule {
     @Singleton
     fun provideUserRepository(api: UserApi): UserRepository {
         return UserRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFoodRepository(api: FoodApi): FoodRepository {
+        return FoodRepositoryImpl(api)
     }
 
     @Provides
