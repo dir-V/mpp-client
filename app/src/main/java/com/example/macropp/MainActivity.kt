@@ -4,6 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.macropp.presentation.auth.AuthScreen
+import com.example.macropp.presentation.food.CreateFoodScreen
+import com.example.macropp.presentation.home.HomeScreen
+import com.example.macropp.presentation.navigation.Routes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,14 +23,6 @@ import com.example.macropp.presentation.userGoal.SetUserGoalsScreen
 import com.example.macropp.ui.theme.MacroPPTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-enum class AppScreen {
-    Landing,
-    Login,
-    SignUp,
-    Home,
-    SetUserGoals
-}
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,35 +30,41 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MacroPPTheme {
-                var currentScreen by remember { mutableStateOf(AppScreen.Landing) }
+                val navController = rememberNavController()
 
-                when (currentScreen) {
-                    AppScreen.Landing -> {
-                        LandingScreen(
-                            onLoginClick = { currentScreen = AppScreen.Login },
-                            onSignUpClick = { currentScreen = AppScreen.SignUp },
-                            onSetGoalsClick = { currentScreen = AppScreen.SetUserGoals }
+                NavHost(
+                    navController = navController,
+                    startDestination = Routes.Auth.route
+                ) {
+                    composable(Routes.Auth.route) {
+                        AuthScreen(
+                            onLoginSuccess = {
+                                navController.navigate(Routes.Home.route) {
+                                    popUpTo(Routes.Auth.route) { inclusive = true }
+                                }
+                            }
                         )
                     }
-                    AppScreen.Login -> {
-                        LoginScreen(
-                            onLoginSuccess = { currentScreen = AppScreen.Home },
-                            onNavigateBack = { currentScreen = AppScreen.Landing }
+                    composable(Routes.Home.route) {
+                        HomeScreen(
+                            onNavigateToCreateFood = {
+                                navController.navigate(Routes.CreateFood.route)
+                            }
                         )
                     }
-                    AppScreen.SignUp -> {
-                        SignUpScreen(
-                            onSignUpSuccess = { currentScreen = AppScreen.Home },
-                            onNavigateBack = { currentScreen = AppScreen.Landing }
+                    composable(Routes.CreateFood.route) {
+                        CreateFoodScreen(
+                            onNavigateBack = { navController.popBackStack() }
                         )
                     }
-                    AppScreen.Home -> {
-                        Text("Welcome! You are logged in.")
-                    }
-                    AppScreen.SetUserGoals ->  {
+                    composable(Routes.SetUserGoals.route) {
                         SetUserGoalsScreen(
-                            onNavigateBack = { currentScreen = AppScreen.Landing },
-                            onSetGoalsSuccess = { currentScreen = AppScreen.Home }
+                            onNavigateBack = { navController.popBackStack() },
+                            onSetGoalsSuccess = {
+                                navController.navigate(Routes.Home.route) {
+                                    popUpTo(Routes.Home.route) { inclusive = true }
+                                }
+                            }
                         )
                     }
                 }

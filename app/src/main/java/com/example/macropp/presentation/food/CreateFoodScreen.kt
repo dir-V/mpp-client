@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun CreateFoodScreen(
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CreateFoodViewModel = hiltViewModel()
 ) {
@@ -41,7 +42,10 @@ fun CreateFoodScreen(
        onCarbsChange = viewModel::updateCarbs,
        onFatsChange = viewModel::updateFats,
        onServingSizeChange = viewModel::updateServingSize,
-       onSave = viewModel::saveFood,
+       onSave = {
+           viewModel.saveFood()
+           onNavigateBack()
+       },
        modifier = modifier
     )
 }
