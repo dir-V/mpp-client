@@ -1,6 +1,7 @@
 package com.example.macropp.di
 
 import com.example.macropp.data.remote.FoodApi
+import com.example.macropp.data.remote.FoodLogApi
 import com.example.macropp.data.remote.UserApi
 import com.example.macropp.data.remote.UserGoalApi
 import dagger.Module
@@ -42,5 +43,11 @@ object NetworkModule {
     @Singleton
     fun provideFoodApi(retrofit: Retrofit): FoodApi {
         return retrofit.create(FoodApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFoodLogApi(retrofit: Retrofit): FoodLogApi {
+        return retrofit.create(FoodLogApi::class.java)
     }
 }

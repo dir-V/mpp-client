@@ -41,6 +41,17 @@ class FoodRepositoryImpl (
             Result.failure(e)
         }
     }
+
+    override suspend fun searchFoods(userId: UUID, query: String): Result<List<Food>> {
+        return try {
+            val response = api.searchUserFoods(userId.toString(), query)
+            val foods = response.map { it.toDomain() }
+
+            Result.success(foods)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 
     // Mappers

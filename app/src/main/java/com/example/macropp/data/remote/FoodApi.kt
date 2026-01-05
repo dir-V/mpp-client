@@ -6,7 +6,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
-import java.util.UUID
+import retrofit2.http.Query
 
 interface FoodApi {
     @POST("api/foods")
@@ -19,4 +19,10 @@ interface FoodApi {
 
     @GET("api/foods/user/{userId}")
     suspend fun getUserFoods(@Path("userId") userId: String): List<FoodResponse>
+
+    @GET("api/foods/user/{userId}/search")
+    suspend fun searchUserFoods(
+        @Path("userId") userId: String,
+        @Query("query") query: String
+    ): List<FoodResponse>
 }
