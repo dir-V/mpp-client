@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetUserGoalsScreen(
     onNavigateBack: () -> Unit,
@@ -22,6 +23,7 @@ fun SetUserGoalsScreen(
     viewModel: GoalsViewModel = hiltViewModel()
 ) {
     val state by viewModel.goalState.collectAsState()
+    val goalOptions = listOf("Maintenance", "Deficit", "Surplus")
     var expanded by remember { mutableStateOf(false) }
 
     Column(
@@ -35,31 +37,61 @@ fun SetUserGoalsScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Box(
-            modifier = Modifier
-                .padding(16.dp)
+//        Box(
+//            modifier = Modifier
+//                .padding(16.dp)
+//        ) {
+//            IconButton(onClick = { expanded = !expanded }) {
+//                Icon(Icons.Default.MoreVert, contentDescription = "More options")
+//            }
+//            DropdownMenu(
+//                expanded = expanded,
+//                onDismissRequest = { expanded = false }
+//            ) {
+//                    DropdownMenuItem(
+//                        text = { Text("Maintenance") },
+//                        onClick = { /* Do something... */ }
+//                    )
+//                    DropdownMenuItem(
+//                        text = { Text("Deficit") },
+//                        onClick = { /* Do something... */}
+//                    )
+//                    DropdownMenuItem(
+//                        text = { Text("Surplus") },
+//                        onClick = { /* Do something... */ }
+//                    )
+//            }
+//        }
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
         ) {
-            IconButton(onClick = { expanded = !expanded }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More options")
-            }
-            DropdownMenu(
+            TextField(
+                value = state.goalType.ifBlank { "Select goal type" },
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Goal Type") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
+                goalOptions.forEach { option ->
                     DropdownMenuItem(
-                        text = { Text("Maintenance") },
-                        onClick = { /* Do something... */ }
+                        text = { Text(option) },
+                        onClick = {
+                            viewModel.onGoalTypeChange(option) // Update ViewModel
+                            expanded = false
+                        }
                     )
-                    DropdownMenuItem(
-                        text = { Text("Deficit") },
-                        onClick = { /* Do something... */}
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Surplus") },
-                        onClick = { /* Do something... */ }
-                    )
+                }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = state.targetCalories,

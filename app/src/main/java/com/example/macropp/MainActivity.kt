@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
                     }
                     AppScreen.Login -> {
                         LoginScreen(
-                            onLoginSuccess = { currentScreen = AppScreen.Home },
+                            onLoginSuccess = { currentScreen = AppScreen.SetUserGoals },
                             onNavigateBack = { currentScreen = AppScreen.Landing }
                         )
                     }

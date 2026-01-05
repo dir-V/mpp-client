@@ -11,7 +11,7 @@ class UserRepositoryImpl (
     private val api: UserApi
 ) : UserRepository {
     override suspend fun createUser(createUserRequest: CreateUserRequest): Result<User> {
-        return try{
+        return try {
             val requestDto = createUserRequest.toRequestDto()
 
             val responseDto = api.createUser(requestDto)
@@ -28,6 +28,17 @@ class UserRepositoryImpl (
         return try {
             val responseDto = api.getUser(id)
             val user = responseDto.toDomain()  // Transform here!
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun loginUser(email: String): Result<User> {
+        return try {
+            // call your API endpoint that finds a user by email
+            val responseDto = api.getUserByEmail(email)
+            val user = responseDto.toDomain()
             Result.success(user)
         } catch (e: Exception) {
             Result.failure(e)
