@@ -3,6 +3,7 @@ package com.example.macropp.data.repository
 import com.example.macropp.data.remote.FoodLogApi
 import com.example.macropp.data.remote.dto.CreateFoodLogRequest
 import com.example.macropp.data.remote.dto.FoodLogResponse
+import com.example.macropp.data.remote.dto.UpdateFoodLogTimestampRequest
 import com.example.macropp.domain.model.FoodLog
 import com.example.macropp.domain.repository.FoodLogRepository
 import kotlinx.coroutines.flow.Flow
@@ -50,6 +51,22 @@ class FoodLogRepositoryImpl(
             _foodLogs.value = foodLogs
 
             Result.success(foodLogs)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateFoodLogTimestamp(foodLogId: UUID, loggedAt: String): Result<FoodLog> {
+        return try {
+            val request = UpdateFoodLogTimestampRequest(loggedAt = loggedAt)
+            val response = api.updateFoodLogTimestamp(foodLogId.toString(), request)
+            val updatedFoodLog = response.toDomain()
+
+            _foodLogs.update { currentList ->
+                currentList.map { if (it.id == foodLogId) updatedFoodLog else it }
+            }
+
+            Result.success(updatedFoodLog)
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -1,5 +1,6 @@
 package com.example.macropp.presentation.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -20,9 +23,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +43,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.macropp.domain.model.FoodLog
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +126,10 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(uiState.foodLogs) { foodLog ->
-                            FoodLogItem(foodLog = foodLog)
+                            FoodLogItem(
+                                foodLog = foodLog,
+                                onClick = { viewModel.onFoodLogTapped(foodLog) }
+                            )
                         }
                         item {
                             Spacer(modifier = Modifier.height(80.dp))
@@ -123,6 +137,15 @@ fun HomeScreen(
                     }
                 }
             }
+        }
+
+        uiState.selectedFoodLogForEdit?.let { selectedFoodLog ->
+            TimestampEditBottomSheet(
+                foodLog = selectedFoodLog,
+                isUpdating = uiState.isUpdatingTimestamp,
+                onDismiss = { viewModel.dismissEditSheet() },
+                onTimeSelected = { hour, minute -> viewModel.updateTimestamp(hour, minute) }
+            )
         }
     }
 }
@@ -192,10 +215,13 @@ private fun MacroColumn(
 @Composable
 private fun FoodLogItem(
     foodLog: FoodLog,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
@@ -209,12 +235,24 @@ private fun FoodLogItem(
                     text = foodLog.name,
                     style = MaterialTheme.typography.titleMedium
                 )
-                if (foodLog.quantityGrams != null) {
-                    Text(
-                        text = "${formatDecimal(foodLog.quantityGrams)}g",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    foodLog.loggedAt?.let { timestamp ->
+                        Text(
+                            text = formatTimestamp(timestamp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    if (foodLog.quantityGrams != null) {
+                        Text(
+                            text = "${formatDecimal(foodLog.quantityGrams)}g",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
@@ -237,10 +275,100 @@ private fun formatDecimal(value: BigDecimal): String {
     return value.setScale(1, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
 }
 
+private fun formatTimestamp(isoTimestamp: String): String {
+    return try {
+        val dateTime = LocalDateTime.parse(isoTimestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        val formatter = DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault())
+        dateTime.format(formatter)
+    } catch (e: Exception) {
+        ""
+    }
+}
+
 private fun buildMacroString(foodLog: FoodLog): String {
     val parts = mutableListOf<String>()
     foodLog.proteinGrams?.let { parts.add("P: ${formatDecimal(it)}") }
     foodLog.carbsGrams?.let { parts.add("C: ${formatDecimal(it)}") }
     foodLog.fatsGrams?.let { parts.add("F: ${formatDecimal(it)}") }
     return parts.joinToString(" | ")
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimestampEditBottomSheet(
+    foodLog: FoodLog,
+    isUpdating: Boolean,
+    onDismiss: () -> Unit,
+    onTimeSelected: (hour: Int, minute: Int) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    val (initialHour, initialMinute) = if (foodLog.loggedAt != null) {
+        try {
+            val dateTime = LocalDateTime.parse(foodLog.loggedAt, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            dateTime.hour to dateTime.minute
+        } catch (e: Exception) {
+            val now = LocalDateTime.now()
+            now.hour to now.minute
+        }
+    } else {
+        val now = LocalDateTime.now()
+        now.hour to now.minute
+    }
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute,
+        is24Hour = false
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Edit Time for ${foodLog.name}",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            TimePicker(state = timePickerState)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                Button(
+                    onClick = {
+                        onTimeSelected(timePickerState.hour, timePickerState.minute)
+                    },
+                    enabled = !isUpdating
+                ) {
+                    if (isUpdating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Save")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
 }
