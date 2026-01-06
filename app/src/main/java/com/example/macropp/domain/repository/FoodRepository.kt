@@ -11,4 +11,6 @@ interface FoodRepository {
     suspend fun createFood(createFoodRequest: CreateFoodRequest): Result<Food>
 
     suspend fun getFood(id: UUID): Result<Food>
+
+    suspend fun searchFoods(userId: UUID, query: String): Result<List<Food>>
 }

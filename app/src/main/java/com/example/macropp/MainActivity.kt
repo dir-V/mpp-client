@@ -12,6 +12,7 @@ import com.example.macropp.presentation.auth.LoginScreen
 import com.example.macropp.presentation.auth.SignUpScreen
 import com.example.macropp.presentation.food.CreateFoodScreen
 import com.example.macropp.presentation.home.HomeScreen
+import com.example.macropp.presentation.log.LogFoodScreen
 import com.example.macropp.presentation.navigation.Routes
 import com.example.macropp.presentation.userGoal.SetUserGoalsScreen
 import com.example.macropp.ui.theme.MacroPPTheme
@@ -59,6 +60,14 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Routes.Home.route) {
                         HomeScreen(
+                            onNavigateToLogFood = {
+                                navController.navigate(Routes.LogFood.route)
+                            }
+                        )
+                    }
+                    composable(Routes.LogFood.route) {
+                        LogFoodScreen(
+                            onNavigateBack = { navController.popBackStack() },
                             onNavigateToCreateFood = {
                                 navController.navigate(Routes.CreateFood.route)
                             }
