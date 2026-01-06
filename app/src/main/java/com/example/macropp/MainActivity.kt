@@ -11,8 +11,8 @@ import com.example.macropp.presentation.auth.LandingScreen
 import com.example.macropp.presentation.auth.LoginScreen
 import com.example.macropp.presentation.auth.SignUpScreen
 import com.example.macropp.presentation.food.CreateFoodScreen
-import com.example.macropp.presentation.home.HomeScreen
 import com.example.macropp.presentation.log.LogFoodScreen
+import com.example.macropp.presentation.navigation.MainScreen
 import com.example.macropp.presentation.navigation.Routes
 import com.example.macropp.presentation.userGoal.SetUserGoalsScreen
 import com.example.macropp.ui.theme.MacroPPTheme
@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                     composable(Routes.Login.route) {
                         LoginScreen(
                             onLoginSuccess = {
-                                navController.navigate(Routes.Home.route) {
+                                navController.navigate(Routes.Main.route) {
                                     popUpTo(Routes.Landing.route) { inclusive = true }
                                 }
                             },
@@ -51,15 +51,15 @@ class MainActivity : ComponentActivity() {
                     composable(Routes.SignUp.route) {
                         SignUpScreen(
                             onSignUpSuccess = {
-                                navController.navigate(Routes.Home.route) {
+                                navController.navigate(Routes.Main.route) {
                                     popUpTo(Routes.Landing.route) { inclusive = true }
                                 }
                             },
                             onNavigateBack = { navController.popBackStack() }
                         )
                     }
-                    composable(Routes.Home.route) {
-                        HomeScreen(
+                    composable(Routes.Main.route) {
+                        MainScreen(
                             onNavigateToLogFood = {
                                 navController.navigate(Routes.LogFood.route)
                             }
@@ -82,8 +82,8 @@ class MainActivity : ComponentActivity() {
                         SetUserGoalsScreen(
                             onNavigateBack = { navController.popBackStack() },
                             onSetGoalsSuccess = {
-                                navController.navigate(Routes.Home.route) {
-                                    popUpTo(Routes.Home.route) { inclusive = true }
+                                navController.navigate(Routes.Main.route) {
+                                    popUpTo(Routes.Landing.route) { inclusive = true }
                                 }
                             }
                         )
