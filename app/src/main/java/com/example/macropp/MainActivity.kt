@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import com.example.macropp.presentation.auth.LandingScreen
 import com.example.macropp.presentation.auth.LoginScreen
 import com.example.macropp.presentation.auth.SignUpScreen
+import com.example.macropp.presentation.weighin.WeighInScreen
 import com.example.macropp.ui.theme.MacroPPTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -19,7 +20,8 @@ enum class AppScreen {
     Landing,
     Login,
     SignUp,
-    Home
+    Home,
+    WeighIn,
 }
 
 @AndroidEntryPoint
@@ -34,7 +36,7 @@ class MainActivity : ComponentActivity() {
                 when (currentScreen) {
                     AppScreen.Landing -> {
                         LandingScreen(
-                            onLoginClick = { currentScreen = AppScreen.Login },
+                            onLoginClick = { currentScreen = AppScreen.WeighIn },
                             onSignUpClick = { currentScreen = AppScreen.SignUp }
                         )
                     }
@@ -52,6 +54,11 @@ class MainActivity : ComponentActivity() {
                     }
                     AppScreen.Home -> {
                         Text("Welcome! You are logged in.")
+                    }
+                    AppScreen.WeighIn -> {
+                        WeighInScreen(
+                            onWeighInSaved = { currentScreen = AppScreen.Home },
+                        )
                     }
                 }
             }

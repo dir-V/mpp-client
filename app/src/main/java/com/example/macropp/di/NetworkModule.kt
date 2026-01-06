@@ -1,6 +1,7 @@
 package com.example.macropp.di
 
 import com.example.macropp.data.remote.UserApi
+import com.example.macropp.data.remote.WeighInApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,5 +29,11 @@ object NetworkModule {
     @Singleton
     fun provideUserApi(retrofit: Retrofit): UserApi {
         return retrofit.create(UserApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWeighInApi(retrofit: Retrofit): WeighInApi {
+        return retrofit.create(WeighInApi::class.java)
     }
 }
