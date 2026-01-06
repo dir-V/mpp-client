@@ -62,6 +62,7 @@ class GoalsViewModel @Inject constructor(
     }
 
     fun onSubmit() {
+
         val currentState = _goalState.value
 
         // Basic validation
@@ -82,7 +83,7 @@ class GoalsViewModel @Inject constructor(
 
             // Create the request object
             val request = CreateUserGoalRequest(
-                userId = "809b200a-3d7b-4b2a-92bb-98bc23384584",
+                userId = userId.toString(),
                 goalType = GoalType.valueOf(currentState.goalType.uppercase()),
                 targetCalories = currentState.targetCalories.toIntOrNull() ?: 0,
                 targetProteinGrams = currentState.targetProteinGrams.toBigDecimal(),
@@ -90,7 +91,7 @@ class GoalsViewModel @Inject constructor(
                 targetFatsGrams = currentState.targetFatsGrams.toBigDecimal()
             )
 
-            // Call the Repository (The code you provided!)
+
             val result = userGoalRepository.createUserGoal(request)
 
             result.onSuccess {
@@ -98,6 +99,14 @@ class GoalsViewModel @Inject constructor(
             }.onFailure { exception ->
                 _goalState.update { it.copy(isLoading = false, error = exception.message) }
             }
+
+        }
+    }
+    fun logout() {
+        viewModelScope.launch {
+            sessionManager.clearSession()
+            // The MainActivity is observing the session flow,
+            // so it should automatically navigate to Login when this finishes.
         }
     }
 }

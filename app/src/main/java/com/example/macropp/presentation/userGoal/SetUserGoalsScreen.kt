@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.macropp.data.session.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,6 +157,14 @@ fun SetUserGoalsScreen(
         if (state.error != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = state.error!!, color = MaterialTheme.colorScheme.error)
+        }
+
+        OutlinedButton(
+            onClick = {viewModel.logout()
+                      onNavigateBack()},
+            modifier = Modifier.fillMaxWidth()
+        )  {
+            Text("Logout")
         }
     }
 }

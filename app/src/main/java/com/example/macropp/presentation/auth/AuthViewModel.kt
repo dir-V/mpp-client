@@ -7,6 +7,7 @@ import com.example.macropp.data.session.SessionManager
 import com.example.macropp.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -58,6 +59,31 @@ class AuthViewModel @Inject constructor(
             }.onFailure { exception ->
                 _uiState.update { it.copy(isLoading = false, error = exception.message) }
             }
+        }
+    }
+
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    // 2. Logged In State: Determine where to go
+    private val _isUserLoggedIn = MutableStateFlow(false)
+    val isUserLoggedIn: StateFlow<Boolean> = _isUserLoggedIn
+
+    init {
+        checkSession()
+    }
+
+    private fun checkSession() {
+        viewModelScope.launch {
+            // Check your SessionManager for a user ID
+            val userId = sessionManager.getUserId()
+
+            // If ID is not null, they are logged in
+            println(userId)
+            _isUserLoggedIn.value = userId != null
+
+            // We are done loading
+            _isLoading.value = false
         }
     }
 

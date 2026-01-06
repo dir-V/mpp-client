@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.util.UUID
@@ -33,6 +34,15 @@ class SessionManager @Inject constructor(@ApplicationContext context: Context) {
         }
     }
 
+    val userIdFlow: Flow<UUID?> = dataStore.data.map { preferences ->
+        val userIdString = preferences[USER_ID_KEY]
+        try {
+            userIdString?.let { UUID.fromString(it) }
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
     suspend fun getUserId(): UUID? {
         // 1. Get the stored value as a String?
         val userIdString = dataStore.data.map { preferences ->
@@ -53,4 +63,4 @@ class SessionManager @Inject constructor(@ApplicationContext context: Context) {
     }
 }
 
-private fun DataStore<Preferences>.edit(transform: suspend (MutablePreferences) -> Unit) {}
+
