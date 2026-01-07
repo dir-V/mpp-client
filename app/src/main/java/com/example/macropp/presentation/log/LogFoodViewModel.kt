@@ -1,5 +1,6 @@
 package com.example.macropp.presentation.log
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.macropp.domain.model.Food
@@ -23,8 +24,11 @@ import javax.inject.Inject
 class LogFoodViewModel @Inject constructor(
     private val foodRepository: FoodRepository,
     private val foodLogRepository: FoodLogRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val selectedDate: String = savedStateHandle.get<String>("date") ?: ""
 
     private val _uiState = MutableStateFlow(LogFoodUiState())
     val uiState: StateFlow<LogFoodUiState> = _uiState.asStateFlow()
@@ -76,15 +80,10 @@ class LogFoodViewModel @Inject constructor(
         _uiState.update { it.copy(quantityGrams = quantity) }
     }
 
-    fun setSelectedDate(date: String) {
-        _uiState.update { it.copy(selectedDate = date) }
-    }
-
     fun logFood() {
         val currentUser = userRepository.currentUser.value
         val selectedFood = _uiState.value.selectedFood
         val quantity = _uiState.value.quantityGrams.toBigDecimalOrNull()
-        val selectedDateString = _uiState.value.selectedDate
 
         if (currentUser == null) {
             _uiState.update { it.copy(error = "No user logged in") }
@@ -102,10 +101,10 @@ class LogFoodViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val loggedAt = if (selectedDateString.isNotBlank()) {
-                val selectedDate = LocalDate.parse(selectedDateString, DateTimeFormatter.ISO_LOCAL_DATE)
+            val loggedAt = if (selectedDate.isNotBlank()) {
+                val date = LocalDate.parse(selectedDate, DateTimeFormatter.ISO_LOCAL_DATE)
                 val currentTime = LocalTime.now()
-                LocalDateTime.of(selectedDate, currentTime)
+                LocalDateTime.of(date, currentTime)
                     .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             } else {
                 LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
