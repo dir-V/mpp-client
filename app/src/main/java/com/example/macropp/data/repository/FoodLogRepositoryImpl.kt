@@ -43,9 +43,9 @@ class FoodLogRepositoryImpl(
         }
     }
 
-    override suspend fun getUserFoodLogs(userId: UUID): Result<List<FoodLog>> {
+    override suspend fun getUserFoodLogs(userId: UUID, date: String?): Result<List<FoodLog>> {
         return try {
-            val response = api.getUserFoodLogs(userId.toString())
+            val response = api.getUserFoodLogs(userId.toString(), date)
             val foodLogs = response.map { it.toDomain() }
 
             _foodLogs.value = foodLogs

@@ -10,5 +10,6 @@ data class LogFoodUiState(
     val isLoading: Boolean = false,
     val isSearching: Boolean = false,
     val error: String? = null,
-    val logSuccess: Boolean = false
+    val logSuccess: Boolean = false,
+    val selectedDate: String = ""
 )

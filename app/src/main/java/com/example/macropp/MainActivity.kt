@@ -4,9 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.activity.viewModels // Ensure this import is here
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -91,8 +93,8 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Routes.Main.route) {
                             MainScreen(
-                                onNavigateToLogFood = {
-                                    navController.navigate(Routes.LogFood.route)
+                                onNavigateToLogFood = { date ->
+                                    navController.navigate(Routes.LogFood.createRoute(date))
                                 },
                                 onLogout = {
                                     navController.navigate(Routes.Login.route) {
@@ -101,8 +103,13 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable(Routes.LogFood.route) {
+                        composable(
+                            route = Routes.LogFood.route,
+                            arguments = listOf(navArgument("date") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val date = backStackEntry.arguments?.getString("date") ?: ""
                             LogFoodScreen(
+                                selectedDate = date,
                                 onNavigateBack = { navController.popBackStack() },
                                 onNavigateToCreateFood = {
                                     navController.navigate(Routes.CreateFood.route)

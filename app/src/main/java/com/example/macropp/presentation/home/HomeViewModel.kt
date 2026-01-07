@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -30,11 +31,13 @@ class HomeViewModel @Inject constructor(
 
     fun loadFoodLogs() {
         val currentUser = userRepository.currentUser.value ?: return
+        val selectedDate = _uiState.value.selectedDate
+        val dateString = selectedDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            foodLogRepository.getUserFoodLogs(currentUser.id)
+            foodLogRepository.getUserFoodLogs(currentUser.id, dateString)
                 .onSuccess { logs ->
                     val totalCalories = logs.sumOf { it.calories }
                     val totalProtein = logs.mapNotNull { it.proteinGrams }.fold(BigDecimal.ZERO) { acc, v -> acc + v }
@@ -61,6 +64,25 @@ class HomeViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    fun selectDate(date: LocalDate) {
+        _uiState.update { it.copy(selectedDate = date) }
+        loadFoodLogs()
+    }
+
+    fun goToPreviousDay() {
+        val newDate = _uiState.value.selectedDate.minusDays(1)
+        selectDate(newDate)
+    }
+
+    fun goToNextDay() {
+        val newDate = _uiState.value.selectedDate.plusDays(1)
+        selectDate(newDate)
+    }
+
+    fun goToToday() {
+        selectDate(LocalDate.now())
     }
 
     fun onFoodLogTapped(foodLog: com.example.macropp.domain.model.FoodLog) {

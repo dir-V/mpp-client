@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -74,10 +76,15 @@ class LogFoodViewModel @Inject constructor(
         _uiState.update { it.copy(quantityGrams = quantity) }
     }
 
+    fun setSelectedDate(date: String) {
+        _uiState.update { it.copy(selectedDate = date) }
+    }
+
     fun logFood() {
         val currentUser = userRepository.currentUser.value
         val selectedFood = _uiState.value.selectedFood
         val quantity = _uiState.value.quantityGrams.toBigDecimalOrNull()
+        val selectedDateString = _uiState.value.selectedDate
 
         if (currentUser == null) {
             _uiState.update { it.copy(error = "No user logged in") }
@@ -95,14 +102,20 @@ class LogFoodViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val currentTime = LocalDateTime.now()
-                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val loggedAt = if (selectedDateString.isNotBlank()) {
+                val selectedDate = LocalDate.parse(selectedDateString, DateTimeFormatter.ISO_LOCAL_DATE)
+                val currentTime = LocalTime.now()
+                LocalDateTime.of(selectedDate, currentTime)
+                    .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            } else {
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            }
 
             foodLogRepository.createFoodLog(
                 userId = currentUser.id,
                 foodId = selectedFood.id,
                 quantityGrams = quantity,
-                loggedAt = currentTime
+                loggedAt = loggedAt
             )
                 .onSuccess {
                     _uiState.update {

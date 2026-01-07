@@ -45,12 +45,17 @@ import java.math.RoundingMode
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LogFoodScreen(
+    selectedDate: String,
     onNavigateBack: () -> Unit,
     onNavigateToCreateFood: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LogFoodViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(selectedDate) {
+        viewModel.setSelectedDate(selectedDate)
+    }
 
     LaunchedEffect(uiState.logSuccess) {
         if (uiState.logSuccess) {

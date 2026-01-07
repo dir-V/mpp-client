@@ -10,6 +10,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface FoodLogApi {
     @POST("api/food-logs")
@@ -18,7 +19,10 @@ interface FoodLogApi {
     ): FoodLogResponse
 
     @GET("api/food-logs/user/{userId}")
-    suspend fun getUserFoodLogs(@Path("userId") userId: String): List<FoodLogResponse>
+    suspend fun getUserFoodLogs(
+        @Path("userId") userId: String,
+        @Query("date") date: String? = null
+    ): List<FoodLogResponse>
 
     @PUT("api/food-logs/{id}/timestamp")
     suspend fun updateFoodLogTimestamp(
