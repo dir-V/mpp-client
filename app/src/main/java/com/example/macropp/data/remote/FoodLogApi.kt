@@ -3,7 +3,9 @@ package com.example.macropp.data.remote
 import com.example.macropp.data.remote.dto.CreateFoodLogRequest
 import com.example.macropp.data.remote.dto.FoodLogResponse
 import com.example.macropp.data.remote.dto.UpdateFoodLogTimestampRequest
+import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -23,4 +25,7 @@ interface FoodLogApi {
         @Path("id") foodLogId: String,
         @Body request: UpdateFoodLogTimestampRequest
     ): FoodLogResponse
+
+    @DELETE("api/food-logs/{id}")
+    suspend fun deleteFoodLog(@Path("id") foodLogId: String): Response<Unit>
 }
