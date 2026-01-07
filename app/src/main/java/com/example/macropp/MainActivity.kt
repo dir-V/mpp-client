@@ -24,6 +24,7 @@ import com.example.macropp.presentation.log.LogFoodScreen
 import com.example.macropp.presentation.navigation.MainScreen
 import com.example.macropp.presentation.navigation.Routes
 import com.example.macropp.presentation.userGoal.SetUserGoalsScreen
+import com.example.macropp.presentation.weighin.WeighInScreen
 import com.example.macropp.ui.theme.MacroPPTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -132,3 +133,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+//AppScreen.WeighIn -> {
+//    WeighInScreen(
+//        onWeighInSaved = { currentScreen = AppScreen.Home },
+//    )
+//}
