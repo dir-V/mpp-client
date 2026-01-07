@@ -12,5 +12,6 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val selectedFoodLogForEdit: FoodLog? = null,
-    val isUpdatingTimestamp: Boolean = false
+    val isUpdatingTimestamp: Boolean = false,
+    val isDeletingFoodLog: Boolean = false
 )

@@ -18,4 +18,6 @@ interface FoodLogRepository {
     suspend fun getUserFoodLogs(userId: UUID): Result<List<FoodLog>>
 
     suspend fun updateFoodLogTimestamp(foodLogId: UUID, loggedAt: String): Result<FoodLog>
+
+    suspend fun deleteFoodLog(foodLogId: UUID): Result<Unit>
 }

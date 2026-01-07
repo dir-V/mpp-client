@@ -71,6 +71,23 @@ class FoodLogRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun deleteFoodLog(foodLogId: UUID): Result<Unit> {
+        return try {
+            val response = api.deleteFoodLog(foodLogId.toString())
+
+            if (response.isSuccessful) {
+                _foodLogs.update { currentList ->
+                    currentList.filter { it.id != foodLogId }
+                }
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to delete food log: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 
 private fun FoodLogResponse.toDomain(): FoodLog {

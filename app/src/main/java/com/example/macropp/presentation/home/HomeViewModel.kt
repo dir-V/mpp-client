@@ -114,4 +114,42 @@ class HomeViewModel @Inject constructor(
                 }
         }
     }
+
+    fun deleteFoodLog() {
+        val foodLog = _uiState.value.selectedFoodLogForEdit ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingFoodLog = true) }
+
+            foodLogRepository.deleteFoodLog(foodLog.id)
+                .onSuccess {
+                    // This can be refactored later with loadFoodLogs() call like in updateTimestamp()
+                    val updatedLogs = _uiState.value.foodLogs.filter { it.id != foodLog.id }
+                    val totalCalories = updatedLogs.sumOf { it.calories }
+                    val totalProtein = updatedLogs.mapNotNull { it.proteinGrams }.fold(BigDecimal.ZERO) { acc, v -> acc + v }
+                    val totalCarbs = updatedLogs.mapNotNull { it.carbsGrams }.fold(BigDecimal.ZERO) { acc, v -> acc + v }
+                    val totalFats = updatedLogs.mapNotNull { it.fatsGrams }.fold(BigDecimal.ZERO) { acc, v -> acc + v }
+
+                    _uiState.update {
+                        it.copy(
+                            foodLogs = updatedLogs,
+                            totalCalories = totalCalories,
+                            totalProtein = totalProtein,
+                            totalCarbs = totalCarbs,
+                            totalFats = totalFats,
+                            selectedFoodLogForEdit = null,
+                            isDeletingFoodLog = false
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isDeletingFoodLog = false,
+                            error = e.message ?: "Failed to delete food log"
+                        )
+                    }
+                }
+        }
+    }
 }

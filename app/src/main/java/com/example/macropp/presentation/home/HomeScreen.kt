@@ -143,8 +143,10 @@ fun HomeScreen(
             TimestampEditBottomSheet(
                 foodLog = selectedFoodLog,
                 isUpdating = uiState.isUpdatingTimestamp,
+                isDeleting = uiState.isDeletingFoodLog,
                 onDismiss = { viewModel.dismissEditSheet() },
-                onTimeSelected = { hour, minute -> viewModel.updateTimestamp(hour, minute) }
+                onTimeSelected = { hour, minute -> viewModel.updateTimestamp(hour, minute) },
+                onDelete = { viewModel.deleteFoodLog() }
             )
         }
     }
@@ -298,8 +300,10 @@ private fun buildMacroString(foodLog: FoodLog): String {
 private fun TimestampEditBottomSheet(
     foodLog: FoodLog,
     isUpdating: Boolean,
+    isDeleting: Boolean,
     onDismiss: () -> Unit,
-    onTimeSelected: (hour: Int, minute: Int) -> Unit
+    onTimeSelected: (hour: Int, minute: Int) -> Unit,
+    onDelete: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
 
@@ -321,6 +325,8 @@ private fun TimestampEditBottomSheet(
         initialMinute = initialMinute,
         is24Hour = false
     )
+
+    val isActionInProgress = isUpdating || isDeleting
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -348,14 +354,17 @@ private fun TimestampEditBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(
+                    onClick = onDismiss,
+                    enabled = !isActionInProgress
+                ) {
                     Text("Cancel")
                 }
                 Button(
                     onClick = {
                         onTimeSelected(timePickerState.hour, timePickerState.minute)
                     },
-                    enabled = !isUpdating
+                    enabled = !isActionInProgress
                 ) {
                     if (isUpdating) {
                         CircularProgressIndicator(
@@ -365,6 +374,26 @@ private fun TimestampEditBottomSheet(
                     } else {
                         Text("Save")
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+                onClick = onDelete,
+                enabled = !isActionInProgress
+            ) {
+                if (isDeleting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else {
+                    Text(
+                        text = "Delete",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
 
