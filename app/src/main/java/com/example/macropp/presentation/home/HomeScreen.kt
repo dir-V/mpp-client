@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -22,6 +24,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -43,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.macropp.domain.model.FoodLog
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -50,7 +54,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToLogFood: () -> Unit,
+    onNavigateToLogFood: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -63,11 +67,16 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Today's Food Log") }
+                title = { Text("Food Log") }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToLogFood) {
+            FloatingActionButton(
+                onClick = {
+                    val dateString = uiState.selectedDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                    onNavigateToLogFood(dateString)
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Log Food"
@@ -81,6 +90,14 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            DateSelector(
+                selectedDate = uiState.selectedDate,
+                onPreviousDay = { viewModel.goToPreviousDay() },
+                onNextDay = { viewModel.goToNextDay() },
+                onTodayClick = { viewModel.goToToday() },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
             DailyTotalsCard(
                 totalCalories = uiState.totalCalories,
                 totalProtein = uiState.totalProtein,
@@ -147,6 +164,61 @@ fun HomeScreen(
                 onDismiss = { viewModel.dismissEditSheet() },
                 onTimeSelected = { hour, minute -> viewModel.updateTimestamp(hour, minute) },
                 onDelete = { viewModel.deleteFoodLog() }
+            )
+        }
+    }
+}
+
+@Composable
+private fun DateSelector(
+    selectedDate: LocalDate,
+    onPreviousDay: () -> Unit,
+    onNextDay: () -> Unit,
+    onTodayClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val today = LocalDate.now()
+    val isToday = selectedDate == today
+
+    val dateText = when {
+        isToday -> "Today"
+        selectedDate == today.minusDays(1) -> "Yesterday"
+        selectedDate == today.plusDays(1) -> "Tomorrow"
+        else -> selectedDate.format(DateTimeFormatter.ofPattern("EEE, MMM d", Locale.getDefault()))
+    }
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onPreviousDay) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = "Previous day"
+            )
+        }
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = dateText,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            if (!isToday) {
+                TextButton(onClick = onTodayClick) {
+                    Text(
+                        text = "Go to Today",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
+        }
+
+        IconButton(onClick = onNextDay) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "Next day"
             )
         }
     }

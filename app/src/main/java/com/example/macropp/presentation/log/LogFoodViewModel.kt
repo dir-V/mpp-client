@@ -1,5 +1,6 @@
 package com.example.macropp.presentation.log
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.macropp.domain.model.Food
@@ -13,7 +14,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -21,8 +24,11 @@ import javax.inject.Inject
 class LogFoodViewModel @Inject constructor(
     private val foodRepository: FoodRepository,
     private val foodLogRepository: FoodLogRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val selectedDate: String = savedStateHandle.get<String>("date") ?: ""
 
     private val _uiState = MutableStateFlow(LogFoodUiState())
     val uiState: StateFlow<LogFoodUiState> = _uiState.asStateFlow()
@@ -95,14 +101,20 @@ class LogFoodViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val currentTime = LocalDateTime.now()
-                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val loggedAt = if (selectedDate.isNotBlank()) {
+                val date = LocalDate.parse(selectedDate, DateTimeFormatter.ISO_LOCAL_DATE)
+                val currentTime = LocalTime.now()
+                LocalDateTime.of(date, currentTime)
+                    .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            } else {
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            }
 
             foodLogRepository.createFoodLog(
                 userId = currentUser.id,
                 foodId = selectedFood.id,
                 quantityGrams = quantity,
-                loggedAt = currentTime
+                loggedAt = loggedAt
             )
                 .onSuccess {
                     _uiState.update {
