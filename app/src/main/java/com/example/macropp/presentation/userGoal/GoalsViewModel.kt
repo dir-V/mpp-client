@@ -105,8 +105,7 @@ class GoalsViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             sessionManager.clearSession()
-            // The MainActivity is observing the session flow,
-            // so it should automatically navigate to Login when this finishes.
+
         }
     }
 }

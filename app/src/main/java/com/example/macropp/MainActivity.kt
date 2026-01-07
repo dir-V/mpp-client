@@ -93,6 +93,11 @@ class MainActivity : ComponentActivity() {
                             MainScreen(
                                 onNavigateToLogFood = {
                                     navController.navigate(Routes.LogFood.route)
+                                },
+                                onLogout = {
+                                    navController.navigate(Routes.Login.route) {
+                                        popUpTo(Routes.Main.route) { inclusive = true }
+                                    }
                                 }
                             )
                         }
@@ -112,6 +117,11 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.SetUserGoals.route) {
                             SetUserGoalsScreen(
                             onNavigateBack = { navController.popBackStack()},
+                                onLogoutSuccess = {
+                                    navController.navigate(Routes.Login.route){
+                                        popUpTo(Routes.Main.route) { inclusive = true }
+                                    }
+                                } ,
 //                                onNavigateBack = { navController.navigate(Routes.Landing.route) },
                                 onSetGoalsSuccess = {
                                     navController.navigate(Routes.Main.route) {

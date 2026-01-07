@@ -65,7 +65,6 @@ class AuthViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // 2. Logged In State: Determine where to go
     private val _isUserLoggedIn = MutableStateFlow(false)
     val isUserLoggedIn: StateFlow<Boolean> = _isUserLoggedIn
 
@@ -98,12 +97,10 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            // ASSUMPTION: Your UserRepository has a 'loginUser' function.
-            // If not, you need to add it to the Repo interface first.
             val result = userRepository.loginUser(currentState.email)
 
             result.onSuccess { user ->
-                // CRITICAL: Save the ID so GoalsViewModel can find it later!
+
                 sessionManager.saveUserId(user.id)
 
                 _uiState.update { it.copy(isLoading = false, user = user) }

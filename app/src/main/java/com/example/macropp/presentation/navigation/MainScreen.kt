@@ -17,6 +17,7 @@ import com.example.macropp.presentation.weight.WeightScreen
 @Composable
 fun MainScreen(
     onNavigateToLogFood: () -> Unit,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
@@ -56,7 +57,8 @@ fun MainScreen(
             composable(Routes.Goals.route) {
                 SetUserGoalsScreen(
                     onNavigateBack = { },
-                    onSetGoalsSuccess = { }
+                    onSetGoalsSuccess = { },
+                    onLogoutSuccess = onLogout
                 )
             }
         }

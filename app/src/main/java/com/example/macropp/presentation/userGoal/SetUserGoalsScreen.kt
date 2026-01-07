@@ -20,6 +20,7 @@ import com.example.macropp.data.session.SessionManager
 @Composable
 fun SetUserGoalsScreen(
     onNavigateBack: () -> Unit,
+    onLogoutSuccess: () -> Unit,
     onSetGoalsSuccess: () -> Unit,
     viewModel: GoalsViewModel = hiltViewModel()
 ) {
@@ -161,7 +162,7 @@ fun SetUserGoalsScreen(
 
         OutlinedButton(
             onClick = {viewModel.logout()
-                      onNavigateBack()},
+                      onLogoutSuccess()},
             modifier = Modifier.fillMaxWidth()
         )  {
             Text("Logout")
