@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -93,11 +95,14 @@ class LogFoodViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
+            val currentTime = LocalDateTime.now()
+                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
             foodLogRepository.createFoodLog(
                 userId = currentUser.id,
                 foodId = selectedFood.id,
                 quantityGrams = quantity,
-                loggedAt = null
+                loggedAt = currentTime
             )
                 .onSuccess {
                     _uiState.update {

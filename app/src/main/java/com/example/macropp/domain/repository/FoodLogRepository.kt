@@ -16,4 +16,6 @@ interface FoodLogRepository {
     ): Result<FoodLog>
 
     suspend fun getUserFoodLogs(userId: UUID): Result<List<FoodLog>>
+
+    suspend fun updateFoodLogTimestamp(foodLogId: UUID, loggedAt: String): Result<FoodLog>
 }

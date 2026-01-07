@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,6 +57,58 @@ class HomeViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             error = e.message ?: "Failed to load food logs"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun onFoodLogTapped(foodLog: com.example.macropp.domain.model.FoodLog) {
+        _uiState.update { it.copy(selectedFoodLogForEdit = foodLog) }
+    }
+
+    fun dismissEditSheet() {
+        _uiState.update { it.copy(selectedFoodLogForEdit = null) }
+    }
+
+    fun updateTimestamp(hour: Int, minute: Int) {
+        val foodLog = _uiState.value.selectedFoodLogForEdit ?: return
+        val currentUser = userRepository.currentUser.value ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUpdatingTimestamp = true) }
+
+            val existingDateTime = foodLog.loggedAt?.let {
+                try {
+                    LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                } catch (e: Exception) {
+                    LocalDateTime.now()
+                }
+            } ?: LocalDateTime.now()
+
+            val newDateTime = existingDateTime
+                .withHour(hour)
+                .withMinute(minute)
+                .withSecond(0)
+                .withNano(0)
+
+            val formattedDateTime = newDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+            foodLogRepository.updateFoodLogTimestamp(foodLog.id, formattedDateTime)
+                .onSuccess {
+                    loadFoodLogs()
+                    _uiState.update {
+                        it.copy(
+                            selectedFoodLogForEdit = null,
+                            isUpdatingTimestamp = false
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isUpdatingTimestamp = false,
+                            error = e.message ?: "Failed to update timestamp"
                         )
                     }
                 }

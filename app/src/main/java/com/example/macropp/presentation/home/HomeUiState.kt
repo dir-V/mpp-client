@@ -10,5 +10,7 @@ data class HomeUiState(
     val totalCarbs: BigDecimal = BigDecimal.ZERO,
     val totalFats: BigDecimal = BigDecimal.ZERO,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val selectedFoodLogForEdit: FoodLog? = null,
+    val isUpdatingTimestamp: Boolean = false
 )
