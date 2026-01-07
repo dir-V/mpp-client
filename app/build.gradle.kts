@@ -21,6 +21,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "GEMINI_API_KEY", "\"${project.properties["GEMINI_API_KEY"]}\"")
     }
 
     buildTypes {
@@ -84,5 +86,11 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.datastore.preferences)
+
+    // Gemini SDK
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+
+    // Kotlin serialisation for parsing JSON responses
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 
