@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.macropp.data.remote.dto.CreateUserGoalRequest
 import com.example.macropp.data.remote.dto.CreateUserRequest
 import com.example.macropp.data.remote.dto.GoalType
+import com.example.macropp.data.session.SessionManager
 import com.example.macropp.domain.repository.UserGoalRepository
 import com.example.macropp.domain.repository.UserRepository
 import com.example.macropp.presentation.userGoal.GoalsUiState
@@ -14,14 +15,27 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.uuid.Uuid
 
 @HiltViewModel
 class GoalsViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val userGoalRepository: UserGoalRepository
+    private val userGoalRepository: UserGoalRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
 // TODO: WE NEED SOME WAY OF GETTING THE USER ID!
+    init {
+        viewModelScope.launch {
+            val userId = sessionManager.getUserId()
+            if (userId == null) {
+                // If no user ID is found, update state to block UI or trigger navigation
+                _goalState.update {
+                    it.copy(error = "User session expired. Please log in again.")
+                }
+            }
+        }
+    }
 
     // Internal mutable state
     private val _goalState = MutableStateFlow(GoalsUiState())
@@ -48,6 +62,7 @@ class GoalsViewModel @Inject constructor(
     }
 
     fun onSubmit() {
+
         val currentState = _goalState.value
 
         // Basic validation
@@ -59,9 +74,16 @@ class GoalsViewModel @Inject constructor(
         viewModelScope.launch {
             _goalState.update { it.copy(isLoading = true, error = null) }
 
+
+            val userId = sessionManager.getUserId()
+            if (userId == null) {
+                _goalState.update { it.copy(isLoading = false, error = "User not logged in.") }
+                return@launch
+            }
+
             // Create the request object
             val request = CreateUserGoalRequest(
-                userId = currentState.userId,
+                userId = userId.toString(),
                 goalType = GoalType.valueOf(currentState.goalType.uppercase()),
                 targetCalories = currentState.targetCalories.toIntOrNull() ?: 0,
                 targetProteinGrams = currentState.targetProteinGrams.toBigDecimal(),
@@ -69,7 +91,7 @@ class GoalsViewModel @Inject constructor(
                 targetFatsGrams = currentState.targetFatsGrams.toBigDecimal()
             )
 
-            // Call the Repository (The code you provided!)
+
             val result = userGoalRepository.createUserGoal(request)
 
             result.onSuccess {
@@ -77,6 +99,13 @@ class GoalsViewModel @Inject constructor(
             }.onFailure { exception ->
                 _goalState.update { it.copy(isLoading = false, error = exception.message) }
             }
+
+        }
+    }
+    fun logout() {
+        viewModelScope.launch {
+            sessionManager.clearSession()
+
         }
     }
 }

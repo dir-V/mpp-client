@@ -48,8 +48,7 @@ fun LoginScreen(
         } else {
             Button(
                 onClick = {
-                    // TODO: Create a login function in your ViewModel
-                    // viewModel.login() 
+                     viewModel.login()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

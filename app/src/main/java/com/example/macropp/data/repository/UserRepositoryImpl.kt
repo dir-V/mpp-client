@@ -18,7 +18,7 @@ class UserRepositoryImpl (
     override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     override suspend fun createUser(createUserRequest: CreateUserRequest): Result<User> {
-        return try{
+        return try {
             val requestDto = createUserRequest.toRequestDto()
 
             val responseDto = api.createUser(requestDto)
@@ -35,6 +35,17 @@ class UserRepositoryImpl (
     override suspend fun getUser(id: UUID): Result<User> {
         return try {
             val responseDto = api.getUser(id)
+            val user = responseDto.toDomain()
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun loginUser(email: String): Result<User> {
+        return try {
+            // call your API endpoint that finds a user by email
+            val responseDto = api.getUserByEmail(email)
             val user = responseDto.toDomain()
             Result.success(user)
         } catch (e: Exception) {
