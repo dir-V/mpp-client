@@ -4,12 +4,16 @@ import com.example.macropp.data.remote.FoodApi
 import com.example.macropp.data.remote.FoodLogApi
 import com.example.macropp.data.remote.UserApi
 import com.example.macropp.data.remote.UserGoalApi
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Singleton
 
 @Module
@@ -18,12 +22,20 @@ object NetworkModule {
 
     private const val BASE_URL = "http://10.0.2.2:8080/"
 
+    val gson = GsonBuilder()
+        .registerTypeAdapter(LocalDate::class.java, JsonDeserializer { json, _, _ ->
+            LocalDate.parse(json.asJsonPrimitive.asString)
+        })
+        .registerTypeAdapter(LocalDateTime::class.java, JsonDeserializer { json, _, _ ->
+            LocalDateTime.parse(json.asJsonPrimitive.asString)
+        })
+        .create()
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 
