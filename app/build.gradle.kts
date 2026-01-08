@@ -39,11 +39,6 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField(
-            "String",
-            "GEMINI_API_KEY",
-            "\"${properties.getProperty("GEMINI_API_KEY")}\""
-        )
     }
     buildTypes {
         release {
@@ -110,6 +105,8 @@ dependencies {
 
     // Gemini SDK
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    implementation(libs.generativeai)
+    implementation(libs.kotlinx.coroutines.core)
 
     // CameraX
     val cameraVersion = "1.3.1"

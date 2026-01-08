@@ -35,6 +35,6 @@ interface FoodLogApi {
     suspend fun deleteFoodLog(@Path("id") foodLogId: String): Response<Unit>
     suspend fun getUserFoodLogs(@Path("userId") userId: String): List<FoodLogResponse>
 
-    @POST("api/food-logs/quick") // Ensure this matches your backend controller path
+    @POST("api/food-logs/quick-add") // Ensure this matches your backend controller path
     suspend fun createQuickLog(@Body request: CreateGeminiRequest): FoodLogResponse
 }

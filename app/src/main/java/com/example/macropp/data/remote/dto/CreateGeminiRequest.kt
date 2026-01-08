@@ -5,10 +5,16 @@ import java.util.UUID
 
 data class CreateGeminiRequest(
     val userId: UUID,
-    val name: String = "AI Scan", // Default name
+
+    // 👇 CHANGED: "name" -> "quickName" to match the Backend DTO
+    val name: String = "AI Scan",
+
     val calories: Int,
+
+    // These already match your backend DTO perfectly:
     val proteinGrams: BigDecimal,
     val carbsGrams: BigDecimal,
     val fatsGrams: BigDecimal,
+
     val loggedAt: String?
 )

@@ -17,12 +17,16 @@ class GeminiService @Inject constructor() {
 
     suspend fun analyzeFoodImage(image: Bitmap): String {
         return withContext(Dispatchers.IO) {
+            if (BuildConfig.GEMINI_API_KEY.isBlank()) {
+                throw IllegalStateException("Gemini API Key is missing. Please add GEMINI_API_KEY to local.properties")
+            }
+
             val prompt = """
-                Analyze the food in this image and provide the estimated nutritional information.
+                Analyse the food in this image and provide the estimated nutritional information.
                 Return ONLY a JSON object with the following keys and integer values:
                 "calories", "protein", "carbs", "fats".
                 For example: {"calories": 500, "protein": 30, "carbs": 50, "fats": 20}
-                If the image is not of food, return an empty JSON object: {}.
+                The image should be of food, but if the image is not of food, return an empty JSON object: {}.
             """.trimIndent()
 
             val inputContent = content {
