@@ -11,7 +11,7 @@ import javax.inject.Inject
 class GeminiService @Inject constructor() {
     // Assuming you have your API key in local.properties as GEMINI_API_KEY
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = "gemini-flash-latest",
         apiKey = BuildConfig.GEMINI_API_KEY
     )
 
