@@ -17,6 +17,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun WeighInScreen(
     viewModel: WeighInViewModel = hiltViewModel(),
     onWeighInSaved: () -> Unit,
+    onNavigateBack: () -> Unit,
+    onLogoutSuccess: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -62,13 +64,20 @@ fun WeighInScreen(
         Button(
             onClick = viewModel::onSubmit,
             modifier = Modifier.fillMaxWidth(),
-            enabled = uiState.weight > 0 && !uiState.isLoading
+            enabled = (uiState.weight.toDoubleOrNull() ?: 0.0) > 0.0 && !uiState.isLoading
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
             } else {
                 Text("Save Weight")
             }
+        }
+
+        OutlinedButton(
+            onClick = onNavigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )  {
+            Text("Cancel")
         }
     }
 }

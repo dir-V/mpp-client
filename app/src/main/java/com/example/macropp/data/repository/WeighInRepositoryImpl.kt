@@ -1,6 +1,8 @@
 package com.example.macropp.data.repository
 
+import androidx.compose.ui.Modifier
 import com.example.macropp.data.remote.WeighInApi
+import com.example.macropp.data.remote.dto.CreateUserGoalRequest
 import com.example.macropp.data.remote.dto.CreateWeighInRequest
 import com.example.macropp.data.remote.dto.WeighInResponse
 import com.example.macropp.domain.model.WeighIn
@@ -13,6 +15,7 @@ class WeighInRepositoryImpl(
 
     override suspend fun createWeighIn(createWeighInRequest: CreateWeighInRequest): Result<WeighIn> {
         return try {
+            val requestDto = createWeighInRequest.toRequestDto()
             val responseDto = api.createWeighIn(createWeighInRequest)
             val weighIn = responseDto.toDomain()
             Result.success(weighIn)
@@ -32,12 +35,18 @@ class WeighInRepositoryImpl(
     }
 }
 
+private fun CreateWeighInRequest.toRequestDto(): CreateWeighInRequest{
+    return CreateWeighInRequest(
+        userId = userId,
+        weightKg = weightKg,
+        weightDate = weightDate
+    )
+}
 private fun WeighInResponse.toDomain(): WeighIn {
     return WeighIn(
-        id = UUID.randomUUID(), // whateva
-        userId = user_id,
-        weightKg = weight_kg,
-        weightDate = weight_date,
-        createdAt = ""
+        id = id, // whateva
+        userId = userId,
+        weightKg = weightKg,
+        weightDate = weightDate
     )
 }

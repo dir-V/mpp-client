@@ -12,7 +12,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.macropp.presentation.home.HomeScreen
 import com.example.macropp.presentation.userGoal.SetUserGoalsScreen
-import com.example.macropp.presentation.weight.WeightScreen
+import com.example.macropp.presentation.weighin.WeighInScreen
 
 @Composable
 fun MainScreen(
@@ -47,7 +47,11 @@ fun MainScreen(
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(Routes.Weight.route) {
-                WeightScreen()
+                WeighInScreen(
+                    onNavigateBack = { },
+                    onWeighInSaved = { },
+                    onLogoutSuccess = onLogout
+                )
             }
             composable(Routes.Home.route) {
                 HomeScreen(
