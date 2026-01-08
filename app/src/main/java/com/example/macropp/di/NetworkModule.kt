@@ -4,6 +4,7 @@ import com.example.macropp.data.remote.FoodApi
 import com.example.macropp.data.remote.FoodLogApi
 import com.example.macropp.data.remote.UserApi
 import com.example.macropp.data.remote.UserGoalApi
+import com.example.macropp.data.remote.WeighInApi
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import dagger.Module
@@ -61,5 +62,11 @@ object NetworkModule {
     @Singleton
     fun provideFoodLogApi(retrofit: Retrofit): FoodLogApi {
         return retrofit.create(FoodLogApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWeighInApi(retrofit: Retrofit): WeighInApi {
+        return retrofit.create(WeighInApi::class.java)
     }
 }
