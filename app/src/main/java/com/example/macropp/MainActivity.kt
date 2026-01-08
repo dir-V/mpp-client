@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Routes.LogFood.createRoute(date))
                                 },
                                 onLogout = {
-                                    navController.navigate(Routes.Login.route) {
+                                    navController.navigate(Routes.Landing.route) {
                                         popUpTo(Routes.Main.route) { inclusive = true }
                                     }
                                 }
@@ -114,7 +114,7 @@ class MainActivity : ComponentActivity() {
                             SetUserGoalsScreen(
                             onNavigateBack = { navController.popBackStack()},
                                 onLogoutSuccess = {
-                                    navController.navigate(Routes.Login.route){
+                                    navController.navigate(Routes.Landing.route){
                                         popUpTo(Routes.Main.route) { inclusive = true }
                                     }
                                 } ,
