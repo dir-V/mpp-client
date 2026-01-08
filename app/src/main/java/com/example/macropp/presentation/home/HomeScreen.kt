@@ -103,6 +103,11 @@ fun HomeScreen(
                 totalProtein = uiState.totalProtein,
                 totalCarbs = uiState.totalCarbs,
                 totalFats = uiState.totalFats,
+
+                goalCalories = uiState.goalCalories,
+                goalProtein = uiState.goalProtein,
+                goalCarbs = uiState.goalCarbs,
+                goalFats = uiState.goalFats,
                 modifier = Modifier.padding(16.dp)
             )
 
@@ -230,8 +235,21 @@ private fun DailyTotalsCard(
     totalProtein: BigDecimal,
     totalCarbs: BigDecimal,
     totalFats: BigDecimal,
+    goalCalories: Int?,
+    goalProtein: BigDecimal?,
+    goalCarbs: BigDecimal?,
+    goalFats: BigDecimal?,
     modifier: Modifier = Modifier
 ) {
+    // Helper to format "100 / 200" or just "100" if goal is missing
+    fun formatProgress(current: String, goal: BigDecimal?): String {
+        return if (goal != null) {
+            "$current / ${formatDecimal(goal)}"
+        } else {
+            current
+        }
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -251,10 +269,33 @@ private fun DailyTotalsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MacroColumn(label = "Calories", value = "$totalCalories", unit = "kcal")
-                MacroColumn(label = "Protein", value = formatDecimal(totalProtein), unit = "g")
-                MacroColumn(label = "Carbs", value = formatDecimal(totalCarbs), unit = "g")
-                MacroColumn(label = "Fats", value = formatDecimal(totalFats), unit = "g")
+                // Calories
+                MacroColumn(
+                    label = "Calories",
+                    value = if (goalCalories != null) "$totalCalories / $goalCalories" else "$totalCalories",
+                    unit = "kcal"
+                )
+
+                // Protein - Now uses the helper
+                MacroColumn(
+                    label = "Protein",
+                    value = formatProgress(formatDecimal(totalProtein), goalProtein),
+                    unit = "g"
+                )
+
+                // Carbs - Now actually uses goalCarbs!
+                MacroColumn(
+                    label = "Carbs",
+                    value = formatProgress(formatDecimal(totalCarbs), goalCarbs),
+                    unit = "g"
+                )
+
+                // Fats - Now actually uses goalFats!
+                MacroColumn(
+                    label = "Fats",
+                    value = formatProgress(formatDecimal(totalFats), goalFats),
+                    unit = "g"
+                )
             }
         }
     }
@@ -345,8 +386,8 @@ private fun FoodLogItem(
     }
 }
 
-private fun formatDecimal(value: BigDecimal): String {
-    return value.setScale(1, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+private fun formatDecimal(value: BigDecimal?): String {
+    return value?.setScale(1, RoundingMode.HALF_UP)?.stripTrailingZeros()?.toPlainString() ?: ""
 }
 
 private fun formatTimestamp(isoTimestamp: String): String {

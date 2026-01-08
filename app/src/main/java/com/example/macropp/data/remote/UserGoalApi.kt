@@ -19,13 +19,13 @@ interface UserGoalApi {
 
     @GET("api/user-goals/{userId}/active")
     suspend fun getActiveGoal(
-        @Path("id") id: UUID
+        @Path("userId") id: UUID
     ): UserGoalResponse
 
     // CHECK THIS
     @GET("api/user-goals/{userId}/has-active")
     suspend fun checkHasActiveGoal(
-        @Path("id") id: UUID
+        @Path("userId") id: UUID
     ): Boolean
 
 }

@@ -38,32 +38,6 @@ fun SetUserGoalsScreen(
         Text(text = "Set Goals", style = MaterialTheme.typography.headlineLarge)
 
         Spacer(modifier = Modifier.height(32.dp))
-
-//        Box(
-//            modifier = Modifier
-//                .padding(16.dp)
-//        ) {
-//            IconButton(onClick = { expanded = !expanded }) {
-//                Icon(Icons.Default.MoreVert, contentDescription = "More options")
-//            }
-//            DropdownMenu(
-//                expanded = expanded,
-//                onDismissRequest = { expanded = false }
-//            ) {
-//                    DropdownMenuItem(
-//                        text = { Text("Maintenance") },
-//                        onClick = { /* Do something... */ }
-//                    )
-//                    DropdownMenuItem(
-//                        text = { Text("Deficit") },
-//                        onClick = { /* Do something... */}
-//                    )
-//                    DropdownMenuItem(
-//                        text = { Text("Surplus") },
-//                        onClick = { /* Do something... */ }
-//                    )
-//            }
-//        }
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
@@ -131,9 +105,6 @@ fun SetUserGoalsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         if (state.isLoading) {
             CircularProgressIndicator()
         } else {
@@ -146,14 +117,6 @@ fun SetUserGoalsScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-
-        OutlinedButton(
-            onClick = onNavigateBack,
-            modifier = Modifier.fillMaxWidth()
-        )  {
-            Text("Cancel")
-        }
 
         if (state.error != null) {
             Spacer(modifier = Modifier.height(8.dp))

@@ -3,12 +3,8 @@ package com.example.macropp.data.repository
 import com.example.macropp.data.remote.UserGoalApi
 import com.example.macropp.domain.repository.UserGoalRepository
 import com.example.macropp.data.remote.dto.CreateUserGoalRequest
-import com.example.macropp.data.remote.dto.GoalType
 import com.example.macropp.data.remote.dto.UserGoalResponse
 import com.example.macropp.domain.model.UserGoal
-import java.math.BigDecimal
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
 

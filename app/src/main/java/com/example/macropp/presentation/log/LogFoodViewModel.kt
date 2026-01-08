@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.macropp.data.session.SessionManager
 import com.example.macropp.domain.model.Food
 import com.example.macropp.domain.repository.FoodLogRepository
 import com.example.macropp.domain.repository.FoodRepository
@@ -19,6 +20,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,6 +28,7 @@ class LogFoodViewModel @Inject constructor(
     private val foodRepository: FoodRepository,
     private val foodLogRepository: FoodLogRepository,
     private val userRepository: UserRepository,
+    private val sessionManager: SessionManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -33,6 +36,19 @@ class LogFoodViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LogFoodUiState())
     val uiState: StateFlow<LogFoodUiState> = _uiState.asStateFlow()
+
+
+    // LOGIC TO FIND CURRENT USER USING SESSION MANAGER
+    private fun withUser(action: suspend (UUID) -> Unit) {
+        viewModelScope.launch {
+            val userId = sessionManager.getUserId()
+            if (userId != null) {
+                action(userId)
+            } else {
+                // Handle logged out state
+            }
+        }
+    }
 
     // --- EXISTING SEARCH LOGIC ---
 
@@ -46,26 +62,26 @@ class LogFoodViewModel @Inject constructor(
     }
 
     private fun searchFoods(query: String) {
-        val currentUser = userRepository.currentUser.value ?: return
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSearching = true) }
+        withUser { userId ->
+            viewModelScope.launch {
+                _uiState.update { it.copy(isSearching = true) }
 
-            foodRepository.searchFoods(currentUser.id, query)
-                .onSuccess { foods ->
-                    _uiState.update { it.copy(searchResults = foods, isSearching = false) }
-                }
-                .onFailure { e ->
-                    _uiState.update {
-                        it.copy(
-                            isSearching = false,
-                            error = e.message ?: "Search failed"
-                        )
+                foodRepository.searchFoods(userId, query)
+                    .onSuccess { foods ->
+                        _uiState.update { it.copy(searchResults = foods, isSearching = false) }
                     }
-                }
+                    .onFailure { e ->
+                        _uiState.update {
+                            it.copy(
+                                isSearching = false,
+                                error = e.message ?: "Search failed"
+                            )
+                        }
+                    }
+            }
         }
     }
-
     fun selectFood(food: Food) {
         _uiState.update {
             it.copy(
@@ -86,14 +102,10 @@ class LogFoodViewModel @Inject constructor(
     // --- STANDARD LOGGING (BY FOOD ID) ---
 
     fun logFood() {
-        val currentUser = userRepository.currentUser.value
+
         val selectedFood = _uiState.value.selectedFood
         val quantity = _uiState.value.quantityGrams.toBigDecimalOrNull()
 
-        if (currentUser == null) {
-            _uiState.update { it.copy(error = "No user logged in") }
-            return
-        }
         if (selectedFood == null) {
             _uiState.update { it.copy(error = "No food selected") }
             return
@@ -116,27 +128,29 @@ class LogFoodViewModel @Inject constructor(
             }
 
             // Standard log: We send the ID, backend calculates macros
-            foodLogRepository.createFoodLog(
-                userId = currentUser.id,
-                foodId = selectedFood.id,
-                quantityGrams = quantity,
-                loggedAt = loggedAt
-            )
-                .onSuccess {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            logSuccess = true,
-                            selectedFood = null,
-                            quantityGrams = ""
-                        )
+            withUser { userId ->
+                foodLogRepository.createFoodLog(
+                    userId = userId,
+                    foodId = selectedFood.id,
+                    quantityGrams = quantity,
+                    loggedAt = loggedAt
+                )
+                    .onSuccess {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                logSuccess = true,
+                                selectedFood = null,
+                                quantityGrams = ""
+                            )
+                        }
                     }
-                }
-                .onFailure { e ->
-                    _uiState.update {
-                        it.copy(isLoading = false, error = e.message ?: "Failed to log food")
+                    .onFailure { e ->
+                        _uiState.update {
+                            it.copy(isLoading = false, error = e.message ?: "Failed to log food")
+                        }
                     }
-                }
+            }
         }
     }
 
@@ -159,10 +173,8 @@ class LogFoodViewModel @Inject constructor(
     }
 
     fun confirmScannedFood() {
-        val currentUser = userRepository.currentUser.value
-        val scanned = _uiState.value.scannedFoodLog
 
-        if (currentUser == null || scanned == null) return
+        val scanned = _uiState.value.scannedFoodLog ?: return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -178,26 +190,33 @@ class LogFoodViewModel @Inject constructor(
 
             // AI Log: We send the macros directly (Quick Add)
             // We use createQuickLog because we don't have a foodId, and we have explicit macros from Gemini
-            val result = foodLogRepository.createQuickLog(
-                userId = currentUser.id,
-                name = scanned.name,
-                calories = scanned.calories,
-                protein = scanned.proteinGrams ?: BigDecimal.ZERO,
-                carbs = scanned.carbsGrams ?: BigDecimal.ZERO,
-                fats = scanned.fatsGrams ?: BigDecimal.ZERO,
-                loggedAt = loggedAt
-            )
+            withUser { userId ->
+                val result = foodLogRepository.createQuickLog(
+                    userId = userId,
+                    name = scanned.name,
+                    calories = scanned.calories,
+                    protein = scanned.proteinGrams ?: BigDecimal.ZERO,
+                    carbs = scanned.carbsGrams ?: BigDecimal.ZERO,
+                    fats = scanned.fatsGrams ?: BigDecimal.ZERO,
+                    loggedAt = loggedAt
+                )
 
-            result.onSuccess {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        logSuccess = true,
-                        scannedFoodLog = null
-                    )
+                result.onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            logSuccess = true,
+                            scannedFoodLog = null
+                        )
+                    }
+                }.onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = e.message ?: "Failed to save log"
+                        )
+                    }
                 }
-            }.onFailure { e ->
-                _uiState.update { it.copy(isLoading = false, error = e.message ?: "Failed to save log") }
             }
         }
     }

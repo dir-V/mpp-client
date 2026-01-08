@@ -15,5 +15,12 @@ data class HomeUiState(
     val selectedFoodLogForEdit: FoodLog? = null,
     val isUpdatingTimestamp: Boolean = false,
     val isDeletingFoodLog: Boolean = false,
-    val selectedDate: LocalDate = LocalDate.now()
+    val selectedDate: LocalDate = LocalDate.now(),
+
+    //Target Cals
+    val goalCalories: Int? = null,
+    val goalProtein: BigDecimal? = null,
+    val goalCarbs: BigDecimal? = null,
+    val goalFats: BigDecimal? = null,
+    val goalType: String? = null
 )

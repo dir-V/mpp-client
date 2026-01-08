@@ -66,10 +66,28 @@ class GoalsViewModel @Inject constructor(
         val currentState = _goalState.value
 
         // Basic validation
-//        if (currentState.email.isBlank() || currentState.height.isBlank()) {
-//            _goalState.update { it.copy(error = "Please fill in all fields") }
-//            return
-//        }
+        if (currentState.goalType.isBlank() ||
+            currentState.targetCalories.isBlank() ||
+            currentState.targetProteinGrams.isBlank() ||
+            currentState.targetCarbsGrams.isBlank() ||
+            currentState.targetFatsGrams.isBlank()) {
+
+            _goalState.value = currentState.copy(
+                error = "Please fill in all fields before setting the goal."
+            )
+            return
+        }
+
+        if (currentState.targetCalories.toIntOrNull() == null ||
+            currentState.targetProteinGrams.toBigDecimalOrNull() == null ||
+            currentState.targetCarbsGrams.toBigDecimalOrNull() == null ||
+            currentState.targetFatsGrams.toBigDecimalOrNull() == null) {
+
+            _goalState.value = currentState.copy(
+                error = "Calories and Macros must be valid numbers."
+            )
+            return
+        }
 
         viewModelScope.launch {
             _goalState.update { it.copy(isLoading = true, error = null) }
