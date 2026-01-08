@@ -62,7 +62,6 @@ class MainActivity : ComponentActivity() {
                         LandingScreen(
                             onLoginClick = { navController.navigate(Routes.Login.route) },
                             onSignUpClick = { navController.navigate(Routes.SignUp.route) },
-                            onSetGoalsClick = { navController.navigate(Routes.SetUserGoals.route) }
                         )
                     }
                     composable(Routes.Login.route) {
