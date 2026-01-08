@@ -91,6 +91,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation("com.patrykandpatrick.vico:compose-m3:2.0.0-alpha.22")
 
     // Retrofit
     implementation(libs.retrofit)

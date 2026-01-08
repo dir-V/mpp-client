@@ -8,11 +8,14 @@ import com.example.macropp.data.remote.UserGoalApi
 import com.example.macropp.data.repository.FoodLogRepositoryImpl
 import com.example.macropp.data.repository.UserGoalRepositoryImpl
 import com.example.macropp.data.repository.FoodRepositoryImpl
+import com.example.macropp.data.remote.WeighInApi
 import com.example.macropp.data.repository.UserRepositoryImpl
 import com.example.macropp.domain.repository.FoodLogRepository
 import com.example.macropp.domain.repository.FoodRepository
 import com.example.macropp.domain.repository.UserGoalRepository
+import com.example.macropp.data.repository.WeighInRepositoryImpl
 import com.example.macropp.domain.repository.UserRepository
+import com.example.macropp.domain.repository.WeighInRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,5 +51,11 @@ object RepositoryModule {
         geminiService: GeminiService // 1. Add the dependency here
     ): FoodLogRepository {
         return FoodLogRepositoryImpl(api, geminiService) // 2. Pass it to the constructor
+    }
+
+    @Provides
+    @Singleton
+    fun provideWeighInRepository(api: WeighInApi): WeighInRepository {
+        return WeighInRepositoryImpl(api)
     }
 }
