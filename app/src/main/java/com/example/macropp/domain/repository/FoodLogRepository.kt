@@ -22,7 +22,8 @@ interface FoodLogRepository {
         calories: Int,
         protein: BigDecimal,
         carbs: BigDecimal,
-        fats: BigDecimal
+        fats: BigDecimal,
+        loggedAt: String? = null
     ): Result<FoodLog>
 
     suspend fun getUserFoodLogs(userId: UUID, date: String? = null): Result<List<FoodLog>>

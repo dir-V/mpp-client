@@ -1,7 +1,7 @@
 package com.example.macropp.presentation.log
 
-import androidx.lifecycle.SavedStateHandle
 import android.graphics.Bitmap
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.macropp.domain.model.Food
@@ -167,6 +167,15 @@ class LogFoodViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
+            val loggedAt = if (selectedDate.isNotBlank()) {
+                val date = LocalDate.parse(selectedDate, DateTimeFormatter.ISO_LOCAL_DATE)
+                val currentTime = LocalTime.now()
+                LocalDateTime.of(date, currentTime)
+                    .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            } else {
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            }
+
             // AI Log: We send the macros directly (Quick Add)
             // We use createQuickLog because we don't have a foodId, and we have explicit macros from Gemini
             val result = foodLogRepository.createQuickLog(
@@ -175,7 +184,8 @@ class LogFoodViewModel @Inject constructor(
                 calories = scanned.calories,
                 protein = scanned.proteinGrams ?: BigDecimal.ZERO,
                 carbs = scanned.carbsGrams ?: BigDecimal.ZERO,
-                fats = scanned.fatsGrams ?: BigDecimal.ZERO
+                fats = scanned.fatsGrams ?: BigDecimal.ZERO,
+                loggedAt = loggedAt
             )
 
             result.onSuccess {
