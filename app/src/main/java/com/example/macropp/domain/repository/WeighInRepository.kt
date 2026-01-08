@@ -7,4 +7,6 @@ import java.util.UUID
 interface WeighInRepository {
     suspend fun createWeighIn(createWeighInRequest: CreateWeighInRequest): Result<WeighIn>
     suspend fun getWeighIn(id: UUID): Result<WeighIn>
+
+    suspend fun getUserWeighIns(id:UUID): Result<List<WeighIn>>
 }

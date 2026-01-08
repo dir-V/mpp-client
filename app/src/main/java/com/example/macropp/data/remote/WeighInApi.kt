@@ -19,4 +19,12 @@ interface WeighInApi {
     suspend fun getWeighIn(
         @Path("id") id: UUID
     ): WeighInResponse
+
+    //  GET http://localhost:8080/api/weigh-ins/user/{userId}
+    // get all weigh-ins created by a specific user
+    @GET("api/weigh-ins/user/{userId}")
+    suspend fun getUserWeighIns(
+        @Path("userId") userId: UUID
+    ): List<WeighInResponse>
+
 }

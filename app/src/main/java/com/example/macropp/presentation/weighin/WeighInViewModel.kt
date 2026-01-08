@@ -21,6 +21,10 @@ class WeighInViewModel @Inject constructor(
 ) : ViewModel() {
 
     init {
+        loadData()
+    }
+
+    private fun loadData() {
         viewModelScope.launch {
             val userId = sessionManager.getUserId()
             if (userId == null) {
@@ -28,6 +32,9 @@ class WeighInViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(error = "User session expired. Please log in again.")
                 }
+            } else {
+                // Fetch the history immediately upon loading
+                fetchHistory(userId)
             }
         }
     }
@@ -39,37 +46,56 @@ class WeighInViewModel @Inject constructor(
         _uiState.update { it.copy(weight = weight) }
     }
 
-    fun onSubmit() {
-        val weightValue = uiState.value
+    // New helper to fetch and sort history
+    private suspend fun fetchHistory(userId: java.util.UUID) {
+        weighInRepository.getUserWeighIns(userId)
+            .onSuccess { history ->
+                _uiState.update { state ->
+                    state.copy(
+                        // Sort by date so the line graph draws correctly from left to right
+                        weighInHistory = history.sortedBy { it.weightDate }
+                    )
+                }
+            }
+            .onFailure { e ->
+                _uiState.update {
+                    it.copy(error = e.message)
+                }
+            }
+    }
+
+        fun onSubmit() {
+            val weightValue = uiState.value
+
+            viewModelScope.launch {
+
+                val userId = sessionManager.getUserId()
+                if (userId == null) {
+                    _uiState.update { it.copy(isLoading = false, error = "User not logged in.") }
+                    return@launch
+                }
 //        if (weightValue != null) {
 //            weightValue = weightValue
 //            return
 //        }
 //        else { _uiState.update { it.copy(error = "Invalid weight") }
 
+                val request = CreateWeighInRequest(
+                    userId = userId.toString(),
+                    weightKg = uiState.value.weight.toBigDecimal(),
+                    weightDate = LocalDate.now().toString()
+                )
 
+                _uiState.update { it.copy(isLoading = true) }
+                try {
+                    weighInRepository.createWeighIn(request)
 
-        viewModelScope.launch {
+                    fetchHistory(userId)
 
-            val userId = sessionManager.getUserId()
-            if (userId == null) {
-                _uiState.update { it.copy(isLoading = false, error = "User not logged in.") }
-                return@launch
-            }
-
-            val request = CreateWeighInRequest(
-                userId = userId.toString(),
-                weightKg = uiState.value.weight.toBigDecimal(),
-                weightDate = LocalDate.now().toString()
-            )
-
-            _uiState.update { it.copy(isLoading = true) }
-            try {
-                weighInRepository.createWeighIn(request)
-                _uiState.update { it.copy(isLoading = false, isSaved = true) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.message) }
+                    _uiState.update { it.copy(isLoading = false, isSaved = true, weight = "") }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
             }
         }
     }
-}

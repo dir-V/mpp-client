@@ -8,5 +8,5 @@ data class WeighInResponse (
     val id: UUID,
     val userId: UUID,
     val weightKg: BigDecimal,
-    val weightDate: LocalDate
+    val weightDate: String
 )

@@ -1,5 +1,7 @@
 package com.example.macropp.presentation.weighin
 
+import WeightLineGraph
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -37,7 +39,7 @@ fun WeighInScreen(
     ) {
         Text(
             text = "Enter weight:",
-            style = MaterialTheme.typography.displayMedium
+            style = MaterialTheme.typography.displaySmall
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -79,5 +81,15 @@ fun WeighInScreen(
         )  {
             Text("Cancel")
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("History", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
+
+        WeightLineGraph(
+            data = uiState.weighInHistory,
+            modifier = Modifier.padding(vertical = 16.dp)
+//                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f))
+        )
     }
 }
