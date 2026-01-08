@@ -1,5 +1,6 @@
 package com.example.macropp.presentation.log
 
+import android.graphics.Bitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,6 +33,8 @@ class LogFoodViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LogFoodUiState())
     val uiState: StateFlow<LogFoodUiState> = _uiState.asStateFlow()
+
+    // --- EXISTING SEARCH LOGIC ---
 
     fun updateSearchQuery(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
@@ -80,6 +83,8 @@ class LogFoodViewModel @Inject constructor(
         _uiState.update { it.copy(quantityGrams = quantity) }
     }
 
+    // --- STANDARD LOGGING (BY FOOD ID) ---
+
     fun logFood() {
         val currentUser = userRepository.currentUser.value
         val selectedFood = _uiState.value.selectedFood
@@ -110,6 +115,7 @@ class LogFoodViewModel @Inject constructor(
                 LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             }
 
+            // Standard log: We send the ID, backend calculates macros
             foodLogRepository.createFoodLog(
                 userId = currentUser.id,
                 foodId = selectedFood.id,
@@ -128,13 +134,76 @@ class LogFoodViewModel @Inject constructor(
                 }
                 .onFailure { e ->
                     _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = e.message ?: "Failed to log food"
-                        )
+                        it.copy(isLoading = false, error = e.message ?: "Failed to log food")
                     }
                 }
         }
+    }
+
+    // --- NEW: CAMERA / AI LOGIC ---
+
+    fun analyzePhoto(bitmap: Bitmap) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            // Call the repository method that uses Gemini
+            val result = foodLogRepository.analyzeFoodPhoto(bitmap)
+
+            result.onSuccess { foodLog ->
+                // Store the result in state so ScanResultScreen can show it
+                _uiState.update { it.copy(isLoading = false, scannedFoodLog = foodLog) }
+            }.onFailure { e ->
+                _uiState.update { it.copy(isLoading = false, error = e.message ?: "AI Analysis Failed") }
+            }
+        }
+    }
+
+    fun confirmScannedFood() {
+        val currentUser = userRepository.currentUser.value
+        val scanned = _uiState.value.scannedFoodLog
+
+        if (currentUser == null || scanned == null) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            val loggedAt = if (selectedDate.isNotBlank()) {
+                val date = LocalDate.parse(selectedDate, DateTimeFormatter.ISO_LOCAL_DATE)
+                val currentTime = LocalTime.now()
+                LocalDateTime.of(date, currentTime)
+                    .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            } else {
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            }
+
+            // AI Log: We send the macros directly (Quick Add)
+            // We use createQuickLog because we don't have a foodId, and we have explicit macros from Gemini
+            val result = foodLogRepository.createQuickLog(
+                userId = currentUser.id,
+                name = scanned.name,
+                calories = scanned.calories,
+                protein = scanned.proteinGrams ?: BigDecimal.ZERO,
+                carbs = scanned.carbsGrams ?: BigDecimal.ZERO,
+                fats = scanned.fatsGrams ?: BigDecimal.ZERO,
+                loggedAt = loggedAt
+            )
+
+            result.onSuccess {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        logSuccess = true,
+                        scannedFoodLog = null
+                    )
+                }
+            }.onFailure { e ->
+                _uiState.update { it.copy(isLoading = false, error = e.message ?: "Failed to save log") }
+            }
+        }
+    }
+
+    fun clearScannedData() {
+        _uiState.update { it.copy(scannedFoodLog = null, error = null) }
     }
 
     fun clearError() {

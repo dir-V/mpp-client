@@ -2,6 +2,7 @@ package com.example.macropp.data.repository
 
 import com.example.macropp.data.remote.FoodApi
 import com.example.macropp.data.remote.dto.CreateFoodRequest
+import com.example.macropp.data.remote.dto.CreateGeminiRequest
 import com.example.macropp.data.remote.dto.FoodResponse
 import com.example.macropp.domain.model.Food
 import com.example.macropp.domain.repository.FoodRepository

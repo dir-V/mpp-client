@@ -1,6 +1,7 @@
 package com.example.macropp.data.remote
 
 import com.example.macropp.data.remote.dto.CreateFoodLogRequest
+import com.example.macropp.data.remote.dto.CreateGeminiRequest
 import com.example.macropp.data.remote.dto.FoodLogResponse
 import com.example.macropp.data.remote.dto.UpdateFoodLogTimestampRequest
 import retrofit2.Response
@@ -32,4 +33,8 @@ interface FoodLogApi {
 
     @DELETE("api/food-logs/{id}")
     suspend fun deleteFoodLog(@Path("id") foodLogId: String): Response<Unit>
+    suspend fun getUserFoodLogs(@Path("userId") userId: String): List<FoodLogResponse>
+
+    @POST("api/food-logs/quick-add") // Ensure this matches your backend controller path
+    suspend fun createQuickLog(@Body request: CreateGeminiRequest): FoodLogResponse
 }
