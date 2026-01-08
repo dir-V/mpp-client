@@ -12,5 +12,8 @@ sealed class Routes(val route: String) {
     object LogFood : Routes("log_food/{date}") {
         fun createRoute(date: String) = "log_food/$date"
     }
+    object LogFoodGraph : Routes("log_food_graph") // The name for the group
+    object Camera : Routes("camera_screen")
+    object ScanResult : Routes("scan_result")
     object SetUserGoals : Routes("set_user_goals")
 }
