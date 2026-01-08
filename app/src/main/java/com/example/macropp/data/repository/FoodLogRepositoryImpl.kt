@@ -2,7 +2,7 @@ package com.example.macropp.data.repository
 
 import android.graphics.Bitmap
 import com.example.macropp.data.remote.FoodLogApi
-import com.example.macropp.data.remote.GeminiService // Ensure this is imported
+import com.example.macropp.data.remote.GeminiService
 import com.example.macropp.data.remote.dto.CreateFoodLogRequest
 import com.example.macropp.data.remote.dto.CreateGeminiRequest
 import com.example.macropp.data.remote.dto.FoodLogResponse
@@ -17,7 +17,6 @@ import org.json.JSONObject
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.plus
 
 class FoodLogRepositoryImpl @Inject constructor(
     private val api: FoodLogApi,
@@ -133,7 +132,8 @@ class FoodLogRepositoryImpl @Inject constructor(
         calories: Int,
         protein: BigDecimal,
         carbs: BigDecimal,
-        fats: BigDecimal
+        fats: BigDecimal,
+        loggedAt: String?
     ): Result<FoodLog> {
         return try {
             val request = CreateGeminiRequest(
@@ -143,7 +143,7 @@ class FoodLogRepositoryImpl @Inject constructor(
                 proteinGrams = protein,
                 carbsGrams = carbs,
                 fatsGrams = fats,
-                loggedAt = null
+                loggedAt = loggedAt
             )
             // Call the new API endpoint
             val response = api.createQuickLog(request)
