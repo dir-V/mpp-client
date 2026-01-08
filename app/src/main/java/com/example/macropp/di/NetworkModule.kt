@@ -20,7 +20,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "http://10.113.132.147:8080/"
 
     val gson = GsonBuilder()
         .registerTypeAdapter(LocalDate::class.java, JsonDeserializer { json, _, _ ->
