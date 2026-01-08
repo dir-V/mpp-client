@@ -2,6 +2,7 @@ package com.example.macropp.di
 
 import com.example.macropp.data.remote.FoodApi
 import com.example.macropp.data.remote.FoodLogApi
+import com.example.macropp.data.remote.GeminiService
 import com.example.macropp.data.remote.UserApi
 import com.example.macropp.data.remote.UserGoalApi
 import com.example.macropp.data.repository.FoodLogRepositoryImpl
@@ -45,8 +46,11 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideFoodLogRepository(api: FoodLogApi): FoodLogRepository {
-        return FoodLogRepositoryImpl(api)
+    fun provideFoodLogRepository(
+        api: FoodLogApi,
+        geminiService: GeminiService // 1. Add the dependency here
+    ): FoodLogRepository {
+        return FoodLogRepositoryImpl(api, geminiService) // 2. Pass it to the constructor
     }
 
     @Provides

@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -47,6 +48,7 @@ import java.math.RoundingMode
 fun LogFoodScreen(
     onNavigateBack: () -> Unit,
     onNavigateToCreateFood: () -> Unit,
+    onNavigateToCamera: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LogFoodViewModel = hiltViewModel()
 ) {
@@ -62,12 +64,11 @@ fun LogFoodScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Log Food") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
+                navigationIcon = { /* ... */ },
                 actions = {
+                    IconButton(onClick = onNavigateToCamera) {
+                        Icon(Icons.Default.PhotoCamera, contentDescription = "Scan Food")
+                    }
                     IconButton(onClick = onNavigateToCreateFood) {
                         Icon(Icons.Default.Add, contentDescription = "Create New Food")
                     }
