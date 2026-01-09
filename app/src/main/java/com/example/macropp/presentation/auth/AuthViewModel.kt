@@ -74,21 +74,14 @@ class AuthViewModel @Inject constructor(
 
     private fun checkSession() {
         viewModelScope.launch {
-            // Check your SessionManager for a user ID
             val userId = sessionManager.getUserId()
-
-            // If ID is not null, they are logged in
-            println(userId)
             _isUserLoggedIn.value = userId != null
-
-            // We are done loading
             _isLoading.value = false
         }
     }
 
     fun login() {
         val currentState = _uiState.value
-
         if (currentState.email.isBlank()) {
             _uiState.update { it.copy(error = "Please enter an email") }
             return

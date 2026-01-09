@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.example.macropp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.macropp"
@@ -72,6 +72,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.ui.text)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     implementation(libs.androidx.core.ktx)

@@ -19,17 +19,14 @@ import kotlin.uuid.Uuid
 
 @HiltViewModel
 class GoalsViewModel @Inject constructor(
-    private val userRepository: UserRepository,
     private val userGoalRepository: UserGoalRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
-// TODO: WE NEED SOME WAY OF GETTING THE USER ID!
     init {
         viewModelScope.launch {
             val userId = sessionManager.getUserId()
             if (userId == null) {
-                // If no user ID is found, update state to block UI or trigger navigation
                 _goalState.update {
                     it.copy(error = "User session expired. Please log in again.")
                 }
@@ -66,10 +63,28 @@ class GoalsViewModel @Inject constructor(
         val currentState = _goalState.value
 
         // Basic validation
-//        if (currentState.email.isBlank() || currentState.height.isBlank()) {
-//            _goalState.update { it.copy(error = "Please fill in all fields") }
-//            return
-//        }
+        if (currentState.goalType.isBlank() ||
+            currentState.targetCalories.isBlank() ||
+            currentState.targetProteinGrams.isBlank() ||
+            currentState.targetCarbsGrams.isBlank() ||
+            currentState.targetFatsGrams.isBlank()) {
+
+            _goalState.value = currentState.copy(
+                error = "Please fill in all fields before setting the goal."
+            )
+            return
+        }
+
+        if (currentState.targetCalories.toIntOrNull() == null ||
+            currentState.targetProteinGrams.toBigDecimalOrNull() == null ||
+            currentState.targetCarbsGrams.toBigDecimalOrNull() == null ||
+            currentState.targetFatsGrams.toBigDecimalOrNull() == null) {
+
+            _goalState.value = currentState.copy(
+                error = "Calories and Macros must be valid numbers."
+            )
+            return
+        }
 
         viewModelScope.launch {
             _goalState.update { it.copy(isLoading = true, error = null) }
@@ -95,7 +110,7 @@ class GoalsViewModel @Inject constructor(
             val result = userGoalRepository.createUserGoal(request)
 
             result.onSuccess {
-                _goalState.update { it.copy(isLoading = false) }
+                _goalState.update { it.copy(isLoading = false, error = "Goal set successfully") }
             }.onFailure { exception ->
                 _goalState.update { it.copy(isLoading = false, error = exception.message) }
             }
@@ -105,7 +120,6 @@ class GoalsViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             sessionManager.clearSession()
-
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.macropp.presentation.home
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,8 +40,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.macropp.domain.model.FoodLog
@@ -61,6 +69,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        viewModel.loadUserGoals()
         viewModel.loadFoodLogs()
     }
 
@@ -95,15 +104,20 @@ fun HomeScreen(
                 onPreviousDay = { viewModel.goToPreviousDay() },
                 onNextDay = { viewModel.goToNextDay() },
                 onTodayClick = { viewModel.goToToday() },
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            DailyTotalsCard(
+            DailyTotalsGaugeCard(
                 totalCalories = uiState.totalCalories,
                 totalProtein = uiState.totalProtein,
                 totalCarbs = uiState.totalCarbs,
                 totalFats = uiState.totalFats,
-                modifier = Modifier.padding(16.dp)
+
+                goalCalories = uiState.goalCalories,
+                goalProtein = uiState.goalProtein,
+                goalCarbs = uiState.goalCarbs,
+                goalFats = uiState.goalFats,
+                modifier = Modifier.padding(8.dp)
             )
 
             when {
@@ -224,14 +238,188 @@ private fun DateSelector(
     }
 }
 
+
+@Composable
+fun DailyTotalsGaugeCard(
+    totalCalories: Int,
+    totalProtein: BigDecimal,
+    totalCarbs: BigDecimal,
+    totalFats: BigDecimal,
+    goalCalories: Int?,
+    goalProtein: BigDecimal?,
+    goalCarbs: BigDecimal?,
+    goalFats: BigDecimal?,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp), // Extra padding for a spacious look
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Daily totals",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // --- HERO GAUGE (CALORIES) ---
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- MACRO ROW ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ArcProgress(
+                    value = totalCalories.toString(),
+                    label = "kcal",
+                    subLabel = if(goalCalories != null) "of $goalCalories" else "",
+                    progress = calculateProgress(totalCalories.toBigDecimal(), goalCalories?.toBigDecimal()),
+                    modifier = Modifier.size(80.dp), // BIG Size
+                    strokeWidth = 6.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    labelStyle = MaterialTheme.typography.titleMedium
+                )
+                // Protein
+                ArcProgress(
+                    value = "${formatDecimal(totalProtein)} g",
+                    label = "Protein",
+                    subLabel = if(goalProtein != null) "of ${formatDecimal(goalProtein)} g" else "",
+                    progress = calculateProgress(totalProtein, goalProtein),
+                    modifier = Modifier.size(80.dp), // Smaller Size
+                    strokeWidth = 6.dp,
+                    color = MaterialTheme.colorScheme.primary, // Blue
+                    labelStyle = MaterialTheme.typography.titleMedium
+                )
+
+                // Carbs
+                ArcProgress(
+                    value = "${formatDecimal(totalCarbs)} g",
+                    label = "Carbs",
+                    subLabel = if (goalCarbs != null) "of ${formatDecimal(goalCarbs)} g" else "",
+                    progress = calculateProgress(totalCarbs, goalCarbs),
+                    modifier = Modifier.size(80.dp),
+                    strokeWidth = 6.dp,
+                    color = MaterialTheme.colorScheme.primary, // Yellow
+                    labelStyle = MaterialTheme.typography.titleMedium
+                )
+
+                // Fats
+                ArcProgress(
+                    value = "${formatDecimal(totalFats)} g",
+                    label = "Fat",
+                    subLabel = if (goalFats != null) "of ${formatDecimal(goalFats)} g" else "",
+                    progress = calculateProgress(totalFats, goalFats),
+                    modifier = Modifier.size(80.dp),
+                    strokeWidth = 6.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    labelStyle = MaterialTheme.typography.titleMedium
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Custom Composable to draw an "Open Circle" or "Gauge"
+ */
+@Composable
+fun ArcProgress(
+    value: String,
+    label: String,
+    subLabel: String = "",
+    progress: Float,
+    modifier: Modifier = Modifier,
+    strokeWidth: Dp,
+    color: Color,
+    labelStyle: TextStyle
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            // Configuration for the Arc
+            // 180 degrees = Half circle. 240 degrees = Open Circle "Speedometer" look.
+            val sweepAngle = 240f
+            val startAngle = 150f // (360 - 240) / 2 + 90 to rotate it to the bottom
+
+            val strokeWidthPx = strokeWidth.toPx()
+
+            // 1. Draw Background Track (Gray)
+            drawArc(
+                color = Color.LightGray.copy(alpha = 0.4f),
+                startAngle = startAngle,
+                sweepAngle = sweepAngle,
+                useCenter = false,
+                style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
+            )
+
+            // 2. Draw Progress (Color)
+            drawArc(
+                color = color,
+                startAngle = startAngle,
+                // Ensure we don't draw past the max sweep angle
+                sweepAngle = sweepAngle * progress,
+                useCenter = false,
+                style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
+            )
+        }
+
+        // 3. The Text in the center/gap
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = value,
+                style = labelStyle,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (subLabel.isNotEmpty()) {
+                Text(
+                    text = subLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun DailyTotalsCard(
     totalCalories: Int,
     totalProtein: BigDecimal,
     totalCarbs: BigDecimal,
     totalFats: BigDecimal,
+    goalCalories: Int?,
+    goalProtein: BigDecimal?,
+    goalCarbs: BigDecimal?,
+    goalFats: BigDecimal?,
     modifier: Modifier = Modifier
 ) {
+    // Helper to format "100 / 200" or just "100" if goal is missing
+    fun formatProgress(current: String, goal: BigDecimal?): String {
+        return if (goal != null) {
+            "$current / ${formatDecimal(goal)}"
+        } else {
+            current
+        }
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -251,10 +439,33 @@ private fun DailyTotalsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MacroColumn(label = "Calories", value = "$totalCalories", unit = "kcal")
-                MacroColumn(label = "Protein", value = formatDecimal(totalProtein), unit = "g")
-                MacroColumn(label = "Carbs", value = formatDecimal(totalCarbs), unit = "g")
-                MacroColumn(label = "Fats", value = formatDecimal(totalFats), unit = "g")
+                // Calories
+                MacroColumn(
+                    label = "Calories",
+                    value = if (goalCalories != null) "$totalCalories / $goalCalories" else "$totalCalories",
+                    unit = "kcal"
+                )
+
+                // Protein - Now uses the helper
+                MacroColumn(
+                    label = "Protein",
+                    value = formatProgress(formatDecimal(totalProtein), goalProtein),
+                    unit = "g"
+                )
+
+                // Carbs - Now actually uses goalCarbs!
+                MacroColumn(
+                    label = "Carbs",
+                    value = formatProgress(formatDecimal(totalCarbs), goalCarbs),
+                    unit = "g"
+                )
+
+                // Fats - Now actually uses goalFats!
+                MacroColumn(
+                    label = "Fats",
+                    value = formatProgress(formatDecimal(totalFats), goalFats),
+                    unit = "g"
+                )
             }
         }
     }
@@ -345,8 +556,14 @@ private fun FoodLogItem(
     }
 }
 
-private fun formatDecimal(value: BigDecimal): String {
-    return value.setScale(1, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+private fun formatDecimal(value: BigDecimal?): String {
+    return value?.setScale(1, RoundingMode.HALF_UP)?.stripTrailingZeros()?.toPlainString() ?: ""
+}
+
+private fun calculateProgress(current: BigDecimal, goal: BigDecimal?): Float {
+    if (goal == null || goal.compareTo(BigDecimal.ZERO) == 0) return 0f
+    val progress = current.toFloat() / goal.toFloat()
+    return progress.coerceIn(0f, 1f)
 }
 
 private fun formatTimestamp(isoTimestamp: String): String {
