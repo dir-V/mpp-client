@@ -69,6 +69,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        viewModel.loadUserGoals()
         viewModel.loadFoodLogs()
     }
 
