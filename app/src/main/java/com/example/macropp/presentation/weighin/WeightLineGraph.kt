@@ -103,10 +103,12 @@ fun WeightLineGraph(
             }
 
             // 3. Draw Y-Axis Labels (Weight in kg)
-            val ySteps = 5
-            for (i in 0..ySteps) {
-                val weight = yMin + (yRange * i / ySteps)
-                val y = topPadding + graphHeight - (i.toFloat() / ySteps * graphHeight)
+            val stepSize = (yRange / 5).roundToInt().coerceAtLeast(1)
+
+            // Iterate using integer progression to ensure unique labels
+            for (weightValue in yMin.toInt()..yMax.toInt() step stepSize) {
+                val normalizedWeight = (weightValue - yMin) / yRange
+                val y = topPadding + graphHeight - (normalizedWeight * graphHeight)
 
                 // Draw tick mark
                 drawLine(
@@ -118,7 +120,7 @@ fun WeightLineGraph(
 
                 // Draw label
                 drawContext.canvas.nativeCanvas.drawText(
-                    "${weight.roundToInt()} kg",
+                    "$weightValue kg",
                     leftPadding - 10f,
                     y + 10f,
                     textPaintLeft
